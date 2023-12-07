@@ -6,8 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="image-improver-threading" />
+        <module name="petri-net-simulator" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="image-improver-threading" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
