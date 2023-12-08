@@ -1,5 +1,7 @@
 package org.nnf.pns.model;
 
+import org.nnf.pns.util.Constants;
+
 import java.util.concurrent.Semaphore;
 
 public class Monitor {
@@ -11,7 +13,6 @@ public class Monitor {
 
 
     private Monitor(){
-
     }
 
     public Monitor getInstance(){
@@ -21,40 +22,46 @@ public class Monitor {
         return instance;
     }
 
-    public void fireTransition(int transition, boolean isTaken){
-        if(!isTaken) {
+    public void fireTransition(int transition, boolean isTaken) {
+        if (!isTaken) {
             try {
                 mutex.acquire();
             } catch (Exception e) {
-                System.out.println("caught exception");
+                e.printStackTrace();
             }
         }
-        if(petriNet.fire(transition)){
-            int[] transitionSensitized=petriNet.sensitized(transition);
-            int[] whichWaiting = waiting(transition);
-            int[] transitionWaitingSensitized = comparingVectors(transitionSensitized, whichWaiting);
-            if(transitionWaitingSensitized.length>0){
-                int nextTransition = policy.whichChoose(transitionSensitized); //Compara con las IT
-                mutex.release();
-            }
-        }else{
+        boolean sensitized = petriNet.sensitized(transition);//si esta sensibilizada
+        boolean someoneWaiting = petriNet.someoneWaiting(transition);
+        if (!sensitized || someoneWaiting) {
             mutex.release();
             toWait(transition);
+            fireTransition(transition, true);
         }
+        int[] fireSequence = getFireSequence(transition);
+        petriNet.fire(fireSequence);
 
+        int[] newSensitized = petriNet.sensitizedTransition();
+        int nextTransition = policy.whichChoose(newSensitized);
+        if(nextTransition!=-1){
+            queueTransitions[nextTransition].release();
+            return;
         }
-
-
-
-    public int[] comparingVectors(int[] sensitized, int[] waiting){
-        return null;
+        mutex.release();
+        return;
     }
 
-    public int[] waiting(int transition){
-        //en que transiciones hay hilos esperando
-        return null;
-    }
+
     public void toWait(int transition){
-        //agrega un hilo esperando por la transicion en la cola
+        try {
+            queueTransitions[transition].acquire();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public int[] getFireSequence(int transition){
+        int[] fireSequence = new int[Constants.TRANS_COUNT];
+        fireSequence[transition]=1;
+        return fireSequence;
     }
 }
