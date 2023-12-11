@@ -5,7 +5,7 @@ import org.nnf.pns.util.Constants;
 import java.util.concurrent.Semaphore;
 
 public class Monitor {
-    private Monitor instance;
+    private static Monitor instance;
     public PetriNet petriNet;
     public Semaphore mutex;
     public Semaphore[] queueTransitions;
@@ -26,7 +26,7 @@ public class Monitor {
         policy=Policy.getInstance();
     }
 
-    public Monitor getInstance(){
+    public static Monitor getInstance(){
         if (instance == null) {
             instance = new Monitor();
         }
@@ -41,24 +41,23 @@ public class Monitor {
                 e.printStackTrace();
             }
         }
-        boolean sensitized = petriNet.isSensitized(transition);//si esta sensibilizada
-        boolean waiting = someoneWaiting[transition]>0;
+        boolean sensitized = petriNet.isSensitized(transition);//si esta sensibilizada la transicion
+        boolean waiting = someoneWaiting[transition]>0; //si hay algun hilo esperando a que se sensibilice la transicion
         if (!sensitized || waiting) {
             mutex.release();
             toWait(transition);
             fireTransition(transition, true);
         }
-        int[] fireSequence = getFireSequence(transition);
-        petriNet.fire(fireSequence);
+        int[] fireSequence = getFireSequence(transition); //obtener la secuencia de disparo de la transicion
+        petriNet.fire(fireSequence); //cambiar la marca actual de la red de petri
 
-        int[] newSensitized = petriNet.sensitizedTransitions();
-        int nextTransition = policy.whichChoose(newSensitized);
-        if(nextTransition!=-1){
-            queueTransitions[nextTransition].release();
+        int[] newSensitized = petriNet.sensitizedTransitions(); //obtener las transiciones sensibilizadas luego del disparo
+        int nextTransition = policy.whichChoose(newSensitized); //elegir una para disparar
+        if(someoneWaiting[nextTransition]>0){
+            queueTransitions[nextTransition].release(); //despierta al hilo que espera por la nueva transicion
             return;
         }
         mutex.release();
-        return;
     }
 
 
