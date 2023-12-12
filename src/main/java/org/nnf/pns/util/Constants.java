@@ -6,6 +6,9 @@ import static lombok.AccessLevel.PRIVATE;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Constants {
+    public static final int PLACES_COUNT = 19;
+    public static final int TRANSITIONS_COUNT = 15;
+    public static final double[] INITIAL_MARKING = {1,1,1,0,3,0,0,1,1,0,2,0,0,0,1,0,0,0,1};
     public static final double[][] FORWARD_INCIDENCE_MATRIX = {
             {1,-1,-1,0,0,0,0,0,0,0,0,0,0,0,1},
             {0,-1,0,1,0,0,0,0,0,0,0,0,0,0,0},
@@ -27,7 +30,6 @@ public final class Constants {
             {0,0,0,0,0,0,0,0,0,0,0,0,0,1,-1},
             {0,0,0,0,0,0,0,0,0,0,0,0,0,-1,1}
     };
-
     public static final double[][] BACKWARDS_INCIDENCE_MATRIX = {
             {0,1,1,0,0,0,0,0,0,0,0,0,0,0,0},
             {0,1,0,0,0,0,0,0,0,0,0,0,0,0,0},
