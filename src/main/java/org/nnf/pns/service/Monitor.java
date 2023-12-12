@@ -72,8 +72,8 @@ public class Monitor {
         mutex.release();
     }
 
-    public int[] getFireSequence(int transition){
-        int[] fireSequence = new int[TRANSITIONS_COUNT];
+    public double[] getFireSequence(int transition){
+        double[] fireSequence = new double[TRANSITIONS_COUNT];
         for (int i = 0; i < TRANSITIONS_COUNT; i++) {
             if (i == transition) {
                 fireSequence[i] = 1;
