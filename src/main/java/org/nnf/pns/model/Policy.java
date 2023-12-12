@@ -20,7 +20,7 @@ public class Policy {
         return instance;
     }
 
-    public int whichChoose(int[] transitions){
+    public synchronized int whichChoose(int[] transitions){
         int chosenTransition = 0;
         if(leftBranchCount>rightBranchCount||(leftBranchCount==0&&rightBranchCount==0)){
             chosenTransition = lookingForTransitions(transitions).stream().filter(trans -> trans % 2 == 0).findFirst().orElse(-1);
