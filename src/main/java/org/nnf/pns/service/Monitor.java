@@ -42,15 +42,7 @@ public class Monitor {
     }
 
     public void fireTransition(int transition, boolean isTaken) {
-        //TODO: Move acquire to method
-        if (!isTaken) {
-            try {
-                mutex.acquire();
-            } catch (Exception e) {
-                //TODO: handle
-                e.printStackTrace();
-            }
-        }
+       takeMutex(isTaken);
 
         //If petri net is not sensitized OR some thread is waiting for the transition to be sensitized
         if (!petriNet.isSensitized(transition) || this.waiting[transition] > 0) {
@@ -90,6 +82,17 @@ public class Monitor {
             waiting[transition]++;
         }catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    private void takeMutex(boolean isTaken){
+        if (!isTaken) {
+            try {
+                mutex.acquire();
+            } catch (Exception e) {
+                //TODO: handle
+                e.printStackTrace();
+            }
         }
     }
 }

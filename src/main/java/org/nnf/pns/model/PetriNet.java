@@ -3,6 +3,7 @@ package org.nnf.pns.model;
 import lombok.AllArgsConstructor;
 import org.ejml.simple.SimpleMatrix;
 
+
 import java.util.Arrays;
 
 import static org.ejml.dense.fixed.CommonOps_FDF2.mult;
@@ -19,7 +20,6 @@ public class PetriNet {
     }
 
     public void fire(double[] transition) {
-        //TODO: Complete
         SimpleMatrix newMarking = new SimpleMatrix(currentMarking);
         SimpleMatrix transitionSequence=new SimpleMatrix(transition);
         newMarking.plus(incidenceMatrix.mult(transitionSequence));
