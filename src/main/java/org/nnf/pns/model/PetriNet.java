@@ -40,6 +40,7 @@ public class PetriNet {
                 }
             }
         }
+        System.out.println("transiciones sensibilizadas: "+ Arrays.toString(sensitizedTransitions));
         return sensitizedTransitions;
     }
 
