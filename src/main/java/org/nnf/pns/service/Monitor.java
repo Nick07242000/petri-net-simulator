@@ -4,6 +4,7 @@ import org.ejml.simple.SimpleMatrix;
 import org.nnf.pns.model.PetriNet;
 import org.nnf.pns.model.policy.Policy;
 
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
 import static java.util.Arrays.fill;
@@ -43,7 +44,6 @@ public class Monitor {
 
     public void fireTransition(int transition, boolean isTaken) {
         takeMutex(isTaken);
-        System.out.println("take Mutex");
         //If petri net is not sensitized OR some thread is waiting for the transition to be sensitized
         if (!petriNet.isSensitized(transition) || this.waiting[transition] > 0) {
             mutex.release();

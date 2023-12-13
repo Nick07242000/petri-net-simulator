@@ -7,6 +7,7 @@ import org.ejml.simple.SimpleMatrix;
 import java.util.Arrays;
 
 import static org.ejml.dense.fixed.CommonOps_FDF2.mult;
+import static org.ejml.dense.fixed.CommonOps_FDF2.transpose;
 import static org.nnf.pns.util.Constants.PLACES_COUNT;
 import static org.nnf.pns.util.Constants.TRANSITIONS_COUNT;
 
@@ -20,16 +21,9 @@ public class PetriNet {
     }
 
     public void fire(double[] transition) {
-        System.out.println("firing");
-        SimpleMatrix newMarking = new SimpleMatrix(currentMarking);
+        SimpleMatrix marking = new SimpleMatrix(currentMarking);
         SimpleMatrix transitionSequence=new SimpleMatrix(transition);
-
-        //System.out.println("matriz de incidencia por secuencia de transiciones");
-        SimpleMatrix p =new SimpleMatrix(incidenceMatrix.mult(transitionSequence));
-        //System.out.println("p mas marca actual");
-        newMarking.plus(p); //TODO: problema con este metodo
-
-        currentMarking=newMarking.toArray2();
+        currentMarking=marking.plus(incidenceMatrix.mult(transitionSequence).transpose()).toArray2();
         System.out.println(Arrays.deepToString(currentMarking));
     }
 
