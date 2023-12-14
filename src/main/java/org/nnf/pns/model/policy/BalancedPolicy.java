@@ -1,9 +1,9 @@
-package org.nnf.pns.model.policy.impl;
+package org.nnf.pns.model.policy;
 
 import lombok.NoArgsConstructor;
-import org.nnf.pns.model.policy.Policy;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.nnf.pns.util.Constants.TRANSITIONS_COUNT;
@@ -15,9 +15,8 @@ public class BalancedPolicy implements Policy {
     private int rightBranchCount = 0;
 
     public static Policy getInstance() {
-        return instance == null ?
-                new BalancedPolicy() :
-                instance;
+        if (instance == null) instance = new BalancedPolicy();
+        return instance;
     }
 
     @Override
@@ -34,7 +33,7 @@ public class BalancedPolicy implements Policy {
         return chosenTransition;
     }
 
-    public ArrayList<Integer> lookingForTransitions(int[] transitions){
+    public List<Integer> lookingForTransitions(int[] transitions){
         ArrayList<Integer> indexTransitions = new ArrayList<>();
 
         for (int i = 0; i< TRANSITIONS_COUNT; i++){

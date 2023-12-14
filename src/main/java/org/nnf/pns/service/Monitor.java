@@ -1,6 +1,6 @@
 package org.nnf.pns.service;
 
-import org.ejml.simple.SimpleMatrix;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.nnf.pns.model.PetriNet;
 import org.nnf.pns.model.policy.Policy;
 
@@ -20,9 +20,8 @@ public class Monitor {
 
     private Monitor(Policy policy) {
         this.petriNet = new PetriNet(
-                new SimpleMatrix(FORWARD_INCIDENCE_MATRIX),
-                new SimpleMatrix(BACKWARDS_INCIDENCE_MATRIX),
-                INITIAL_MARKING
+                new Array2DRowRealMatrix(INCIDENCE_MATRIX),
+                new Array2DRowRealMatrix(INITIAL_MARKING)
         );
 
         this.policy = policy;
@@ -36,9 +35,8 @@ public class Monitor {
     }
 
     public static Monitor getInstance(Policy policy) {
-        return instance == null ?
-                new Monitor(policy) :
-                instance;
+        if (instance == null) instance = new Monitor(policy);
+        return instance;
     }
 
     public void fireTransition(int transition, boolean isTaken) {
@@ -51,7 +49,7 @@ public class Monitor {
             fireTransition(transition, true);
         }
 
-        petriNet.fire(getFireSequence(transition)); //cambiar la marca actual de la red de petri
+        petriNet.fire(transition); //cambiar la marca actual de la red de petri
 
         int[] newSensitized = petriNet.getSensitizedTransitions(); //obtener las transiciones sensibilizadas luego del disparo
         int nextTransition = policy.choose(newSensitized); //elegir una para disparar
@@ -62,18 +60,6 @@ public class Monitor {
         }
 
         mutex.release();
-    }
-
-    public double[] getFireSequence(int transition){
-        double[] fireSequence = new double[TRANSITIONS_COUNT];
-        for (int i = 0; i < TRANSITIONS_COUNT; i++) {
-            if (i == transition) {
-                fireSequence[i] = 1;
-            } else {
-                fireSequence[i] = 0;
-            }
-        }
-        return fireSequence;
     }
 
     private void increaseWaitingThreads(int transition){
