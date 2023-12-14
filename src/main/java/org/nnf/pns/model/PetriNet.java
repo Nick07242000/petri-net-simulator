@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 
-import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.stream;
 import static org.nnf.pns.util.Constants.PLACES_COUNT;
