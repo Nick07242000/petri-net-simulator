@@ -1,6 +1,7 @@
 package org.nnf.pns.service;
 
 import lombok.AllArgsConstructor;
+import org.nnf.pns.util.Constants;
 
 import static org.nnf.pns.util.Constants.TRANSITIONS_COUNT;
 
@@ -11,10 +12,17 @@ public class Worker implements Runnable {
 
     @Override
     public void run() {
-        for (int i = 0; i < TRANSITIONS_COUNT; i++) {
-            if (transition[i] == 1) {
-                monitor.fireTransition(i, false);
+
+        while(true) {
+            System.out.println("Hilo " + Thread.currentThread().getName() + " iniciando");
+            for(int i=0; i< Constants.TRANSITIONS_COUNT; i++) {
+                if(transition[i]==1) {
+                    monitor.fireTransition(i, false);
+                }
             }
         }
+
+
+
     }
 }
