@@ -1,6 +1,8 @@
 package org.nnf.pns.model.policy;
 
 import lombok.NoArgsConstructor;
+import org.apache.log4j.Logger;
+import org.nnf.pns.Main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +15,7 @@ public class BalancedPolicy implements Policy {
     private static BalancedPolicy instance;
     private int leftBranchCount = 0;
     private int rightBranchCount = 0;
+    private static final Logger log = Logger.getLogger(Main.class);
 
     public static Policy getInstance() {
         if (instance == null) instance = new BalancedPolicy();
@@ -26,14 +29,11 @@ public class BalancedPolicy implements Policy {
         if (leftBranchCount > rightBranchCount || (leftBranchCount ==  rightBranchCount ) ) {
             chosenTransition = lookingForTransitions(transitions).stream().filter(trans -> trans % 2 == 0).findFirst().orElse(0);
             rightBranchCount++;
-            System.out.println("rightBranchCount: " + rightBranchCount);
         } else  {
             chosenTransition = lookingForTransitions(transitions).stream().filter(trans -> trans % 2 != 0).findFirst().orElse(0);
             leftBranchCount++;
-            System.out.println("leftBranchCount: " + leftBranchCount);
         }
-
-        System.out.println("chosenTransition: " + chosenTransition);
+        log.debug("chosenTransition: " + chosenTransition);
         return chosenTransition;
     }
 
@@ -45,7 +45,7 @@ public class BalancedPolicy implements Policy {
                 indexTransitions.add(i);
             }
         }
-        System.out.println("indexTransitions: " + indexTransitions);
+        log.debug("indexTransitions: " + indexTransitions);
         return indexTransitions;
     }
 }

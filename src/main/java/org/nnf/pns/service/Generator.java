@@ -11,13 +11,16 @@ public class Generator implements Runnable{
 
     @Override
     public void run() {
-        while(true) {
+        int index = 0;
+        do{
             monitor.fireTransition(0, false);
             try {
                 sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            index++;
         }
+        while (index < 50);
     }
 }

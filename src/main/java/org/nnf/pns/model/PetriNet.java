@@ -38,6 +38,7 @@ public class PetriNet {
                 .getColumnMatrix(0)
                 .transpose();
 
+        log.info("T" + Arrays.toString(transitions));
         log.debug("New Marking: " + stringifyArray(currentMarking.getRow(0)));
     }
 

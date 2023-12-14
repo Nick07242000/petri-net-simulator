@@ -28,8 +28,8 @@ public class Main {
         Thread Tamarillo = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
         Thread Tverde = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0}));
         Thread Trojo = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
-        Thread Tmarron = new Thread(new Worker(monitor, new int[] {0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0}));
-        Thread Tceleste = new Thread(new Worker(monitor, new int[] {0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0}));
+        Thread Tmarron = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0}));
+        Thread Tceleste = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0}));
         Thread Tmagenta = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1}));
 
         Tazul.start();

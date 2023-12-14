@@ -1,6 +1,7 @@
 package org.nnf.pns.service;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.log4j.Logger;
 import org.nnf.pns.model.PetriNet;
 import org.nnf.pns.model.policy.Policy;
 
@@ -18,6 +19,8 @@ public class Monitor {
     private final Semaphore mutex;
     private final Semaphore[] queue;
     private final int[] waiting;
+    private static final Logger log = Logger.getLogger(PetriNet.class);
+
 
     private Monitor(Policy policy) {
         this.petriNet = new PetriNet(
@@ -44,13 +47,13 @@ public class Monitor {
 
     public void fireTransition(int transition, boolean isTaken) {
        takeMutex(isTaken);
-        System.out.println("Entro el hilo: " + transition);
+        log.debug("Entrando hilo de la transicion: " + transition);
 
         //If petri net is not sensitized OR some thread is waiting for the transition to be sensitized
         if (!petriNet.isSensitized(transition) || this.waiting[transition] > 0) {
             waiting[transition]++;
             mutex.release();
-            System.out.println("Hilo esperando por la transicion: " + transition);
+            log.debug("Hilo esperando por la transicion: " + transition);
             increaseWaitingThreads(transition);
             fireTransition(transition, true);
         }
@@ -61,10 +64,11 @@ public class Monitor {
         int nextTransition = policy.choose(newSensitized); //elegir una para disparar
 
         if (this.waiting[nextTransition] > 0) {
+            this.waiting[nextTransition]--;
             queue[nextTransition].release(); //despierta al hilo que espera por la nueva transicion
         }
         else {
-            System.out.println("No hay hilos esperando por la transicion: " + nextTransition);
+            log.debug("No hay hilos esperando por la transicion: " + nextTransition);
             mutex.release();
         }
     }
@@ -81,7 +85,7 @@ public class Monitor {
         if (!isTaken) {
             try {
                 mutex.acquire();
-                System.out.println("Hilo tomando mutex");
+                log.debug("Hilo " +Thread.currentThread().getName() +"tomando mutex");
             } catch (Exception e) {
                 //TODO: handle
                 e.printStackTrace();
