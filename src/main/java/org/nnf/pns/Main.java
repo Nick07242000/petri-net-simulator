@@ -25,5 +25,33 @@ public class Main {
         pn.fire(1);
 
         pn.getSensitizedTransitions();
+
+        pn.fire(3);
+
+        pn.getSensitizedTransitions();
+
+        pn.fire(6);
+
+        pn.getSensitizedTransitions();
+
+        pn.fire(8);
+
+        pn.getSensitizedTransitions();
+
+        pn.fire(9);
+
+        pn.getSensitizedTransitions();
+
+        pn.fire(11);
+
+        pn.getSensitizedTransitions();
+
+        pn.fire(13);
+
+        pn.getSensitizedTransitions();
+
+        pn.fire(14);
+
+        pn.getSensitizedTransitions();
     }
 }

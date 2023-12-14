@@ -26,7 +26,7 @@ public class Monitor {
 
         this.policy = policy;
 
-        this.mutex = new Semaphore(0);
+        this.mutex = new Semaphore(1);
 
         this.queue = generate(() -> this.mutex).limit(TRANSITIONS_COUNT).toArray(Semaphore[]::new);
 
