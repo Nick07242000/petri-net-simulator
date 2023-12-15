@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.log4j.Logger;
+import org.nnf.pns.util.Constants;
 
 import java.util.Arrays;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.stream;
-import static org.nnf.pns.util.Constants.PLACES_COUNT;
-import static org.nnf.pns.util.Constants.TRANSITIONS_COUNT;
+import static org.nnf.pns.util.Constants.*;
 import static org.nnf.pns.util.Net.createSequence;
 import static org.nnf.pns.util.Net.stringifyArray;
 
@@ -21,7 +21,7 @@ public class PetriNet {
     private final RealMatrix incidenceMatrix;
     private RealMatrix currentMarking;
 
-    public void fire(int... transitions) {
+    public synchronized void fire(int... transitions) {
         log.debug("Current Marking: " + stringifyArray(currentMarking.getRow(0)));
         log.debug("Firing transitions: " + Arrays.toString(transitions));
 
@@ -37,7 +37,6 @@ public class PetriNet {
                 .add(incidenceMatrix.multiply(sequenceMatrix))
                 .getColumnMatrix(0)
                 .transpose();
-
         log.info("T" + Arrays.toString(transitions));
         log.debug("New Marking: " + stringifyArray(currentMarking.getRow(0)));
     }
@@ -67,5 +66,7 @@ public class PetriNet {
 
         return sensitizedTransitions;
     }
+
+    public boolean finished() { return Arrays.deepEquals(currentMarking.getData(), INITIAL_MARKING);}
 
 }

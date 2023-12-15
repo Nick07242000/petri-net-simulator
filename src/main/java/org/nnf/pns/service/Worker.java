@@ -17,7 +17,7 @@ public class Worker implements Runnable {
     @Override
     public void run() {
         int index=0;
-        do{
+        while(index<Constants.LIMIT_FIRING){
             for(int i=0; i< Constants.TRANSITIONS_COUNT; i++) {
                 if(transition[i]==1) {
                     log.debug("Hilo " + Thread.currentThread().getName() + " disparando transicion " + i);
@@ -25,9 +25,7 @@ public class Worker implements Runnable {
                 }
             }
             index++;
-        }while(index<10);
-
-
+        }
 
     }
 }

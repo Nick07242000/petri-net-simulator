@@ -1,6 +1,7 @@
 package org.nnf.pns.service;
 
 import lombok.AllArgsConstructor;
+import org.nnf.pns.util.Constants;
 
 import static java.lang.Thread.sleep;
 
@@ -11,16 +12,15 @@ public class Generator implements Runnable{
 
     @Override
     public void run() {
-        int index = 0;
-        do{
+        int index=0;
+        while (index< Constants.LIMIT_FIRING){
             monitor.fireTransition(0, false);
-            try {
+            /*try {
                 sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
             index++;
         }
-        while (index < 5);
     }
 }
