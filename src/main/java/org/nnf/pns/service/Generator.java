@@ -21,6 +21,6 @@ public class Generator implements Runnable{
             }
             index++;
         }
-        while (index < 50);
+        while (index < 5);
     }
 }

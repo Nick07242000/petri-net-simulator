@@ -16,15 +16,16 @@ public class Worker implements Runnable {
 
     @Override
     public void run() {
-
-        while(true) {
+        int index=0;
+        do{
             for(int i=0; i< Constants.TRANSITIONS_COUNT; i++) {
                 if(transition[i]==1) {
                     log.debug("Hilo " + Thread.currentThread().getName() + " disparando transicion " + i);
                     monitor.fireTransition(i, false);
                 }
             }
-        }
+            index++;
+        }while(index<10);
 
 
 
