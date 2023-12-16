@@ -2,30 +2,27 @@ package org.nnf.pns.service;
 
 import lombok.AllArgsConstructor;
 import org.apache.log4j.Logger;
-import org.nnf.pns.model.PetriNet;
-import org.nnf.pns.util.Constants;
 
+import static java.lang.Thread.currentThread;
+import static org.nnf.pns.util.Constants.LIMIT_FIRING;
 import static org.nnf.pns.util.Constants.TRANSITIONS_COUNT;
 
 @AllArgsConstructor
 public class Worker implements Runnable {
+    private static final Logger log = Logger.getLogger(Worker.class);
+
     private final Monitor monitor;
     private final int[] transition;
-    private static final Logger log = Logger.getLogger(PetriNet.class);
-
 
     @Override
     public void run() {
-        int index=0;
-        while(index<Constants.LIMIT_FIRING){
-            for(int i=0; i< Constants.TRANSITIONS_COUNT; i++) {
-                if(transition[i]==1) {
-                    log.debug("Hilo " + Thread.currentThread().getName() + " disparando transicion " + i);
+        for (int i = 0; i < LIMIT_FIRING; i++) {
+            for(int j = 0; j < TRANSITIONS_COUNT; j++) {
+                if (transition[j] == 1) {
+                    log.debug("Thread " + currentThread().getName() + " firing transition " + i);
                     monitor.fireTransition(i, false);
                 }
             }
-            index++;
         }
-
     }
 }

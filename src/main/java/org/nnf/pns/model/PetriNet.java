@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.log4j.Logger;
-import org.nnf.pns.util.Constants;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.Arrays.deepEquals;
 import static java.util.Arrays.stream;
 import static org.nnf.pns.util.Constants.*;
 import static org.nnf.pns.util.Net.createSequence;
@@ -37,8 +39,10 @@ public class PetriNet {
                 .add(incidenceMatrix.multiply(sequenceMatrix))
                 .getColumnMatrix(0)
                 .transpose();
-        log.info("T" + Arrays.toString(transitions));
+
         log.debug("New Marking: " + stringifyArray(currentMarking.getRow(0)));
+
+        log.info("T" + Arrays.toString(transitions));
     }
 
     public boolean areSensitized(int... transitions) {
@@ -55,7 +59,7 @@ public class PetriNet {
         return true;
     }
 
-    public int[] getSensitizedTransitions(){
+    public int[] getSensitizedTransitions() {
         int[] sensitizedTransitions = new int[TRANSITIONS_COUNT];
 
         for (int i = 0; i < TRANSITIONS_COUNT; i++) {
@@ -67,6 +71,23 @@ public class PetriNet {
         return sensitizedTransitions;
     }
 
-    public boolean finished() { return Arrays.deepEquals(currentMarking.getData(), INITIAL_MARKING);}
+    public List<Integer> getSensitizedTransitionNumbers() {
+        int[] sensitizedTransitions = getSensitizedTransitions();
+        List<Integer> indexTransitions = new ArrayList<>();
+
+        for (int i = 1; i < TRANSITIONS_COUNT; i++) {
+            if (sensitizedTransitions[i] == 1) {
+                indexTransitions.add(i);
+            }
+        }
+
+        log.debug("Sensitized Transitions: : " + indexTransitions);
+        return indexTransitions;
+    }
+
+
+    public boolean isFinished() {
+        return deepEquals(currentMarking.getData(), INITIAL_MARKING);
+    }
 
 }

@@ -1,26 +1,23 @@
 package org.nnf.pns.service;
 
 import lombok.AllArgsConstructor;
-import org.nnf.pns.util.Constants;
+import org.apache.log4j.Logger;
 
-import static java.lang.Thread.sleep;
+import static org.nnf.pns.util.Constants.LIMIT_FIRING;
 
 @AllArgsConstructor
 public class Generator implements Runnable{
-    private final Monitor monitor;
+    private static final Logger log = Logger.getLogger(Generator.class);
 
+    private final Monitor monitor;
 
     @Override
     public void run() {
-        int index=0;
-        while (index< Constants.LIMIT_FIRING){
+        for (int i = 0; i < LIMIT_FIRING; i++) {
+            log.debug("Generating mark...");
             monitor.fireTransition(0, false);
-            /*try {
-                sleep(1);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }*/
-            index++;
+
+            //delay(1000);
         }
     }
 }
