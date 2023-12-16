@@ -2,6 +2,7 @@ package org.nnf.pns;
 
 import org.nnf.pns.model.policy.BalancedPolicy;
 import org.nnf.pns.model.policy.Policy;
+import org.nnf.pns.model.policy.WeightedPolicy;
 import org.nnf.pns.service.Monitor;
 
 import static org.nnf.pns.util.Concurrency.createGenerator;
@@ -9,7 +10,8 @@ import static org.nnf.pns.util.Concurrency.createWorker;
 
 public class Main {
     public static void main(String[] args) {
-        Policy policy = BalancedPolicy.getInstance();
+        //Policy policy = BalancedPolicy.getInstance();
+        Policy policy = WeightedPolicy.getInstance();
         Monitor monitor = Monitor.getInstance(policy);
 
         createWorker("PURPLE", monitor, 1, 3);
