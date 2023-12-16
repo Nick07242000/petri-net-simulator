@@ -5,12 +5,14 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.Arrays.deepEquals;
 import static java.util.Arrays.stream;
-import static org.nnf.pns.util.Constants.PLACES_COUNT;
-import static org.nnf.pns.util.Constants.TRANSITIONS_COUNT;
+import static org.nnf.pns.util.Constants.*;
 import static org.nnf.pns.util.Net.createSequence;
 import static org.nnf.pns.util.Net.stringifyArray;
 
@@ -21,7 +23,7 @@ public class PetriNet {
     private final RealMatrix incidenceMatrix;
     private RealMatrix currentMarking;
 
-    public void fire(int... transitions) {
+    public synchronized void fire(int... transitions) {
         log.debug("Current Marking: " + stringifyArray(currentMarking.getRow(0)));
         log.debug("Firing transitions: " + Arrays.toString(transitions));
 
@@ -55,7 +57,7 @@ public class PetriNet {
         return true;
     }
 
-    public int[] getSensitizedTransitions(){
+    public int[] getSensitizedTransitions() {
         int[] sensitizedTransitions = new int[TRANSITIONS_COUNT];
 
         for (int i = 0; i < TRANSITIONS_COUNT; i++) {
@@ -65,6 +67,23 @@ public class PetriNet {
         log.debug("Sensitized Transitions: " + stringifyArray(sensitizedTransitions));
 
         return sensitizedTransitions;
+    }
+
+    public List<Integer> getSensitizedTransitionNumbers() {
+        int[] sensitizedTransitions = getSensitizedTransitions();
+        List<Integer> indexTransitions = new ArrayList<>();
+
+        for (int i = 1; i < TRANSITIONS_COUNT; i++) {
+            if (sensitizedTransitions[i] == 1) {
+                indexTransitions.add(i);
+            }
+        }
+
+        return indexTransitions;
+    }
+
+    public boolean hasInitialState() {
+        return deepEquals(currentMarking.getData(), INITIAL_MARKING);
     }
 
 }

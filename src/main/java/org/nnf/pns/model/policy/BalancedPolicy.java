@@ -1,15 +1,16 @@
 package org.nnf.pns.model.policy;
 
 import lombok.NoArgsConstructor;
+import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.nnf.pns.util.Constants.TRANSITIONS_COUNT;
 
 @NoArgsConstructor(access = PRIVATE)
 public class BalancedPolicy implements Policy {
+    private static final Logger log = Logger.getLogger(BalancedPolicy.class);
     private static BalancedPolicy instance;
     private int leftBranchCount = 0;
     private int rightBranchCount = 0;
@@ -20,28 +21,32 @@ public class BalancedPolicy implements Policy {
     }
 
     @Override
-    public int choose(int[] transitions) {
-        int chosenTransition = 0;
+    public synchronized int choose(List<Integer> transitions) {
+        //If no transitions are sensitized choose T0
+        if (transitions.size() == 1)
+            return transitions.get(0);
 
-        if (leftBranchCount > rightBranchCount || (leftBranchCount == 0 && rightBranchCount == 0) ) {
-            chosenTransition = lookingForTransitions(transitions).stream().filter(trans -> trans % 2 == 0).findFirst().orElse(-1);
-            rightBranchCount++;
-        } else if (leftBranchCount < rightBranchCount) {
-            chosenTransition = lookingForTransitions(transitions).stream().filter(trans -> trans % 2 != 0).findFirst().orElse(-1);
-            leftBranchCount++;
-        }
+        //Balance branches
+        int chosenTransition = leftBranchCount >= rightBranchCount ?
+                filterTransitions(transitions, t -> t % 2 == 0) :
+                filterTransitions(transitions, t -> t % 2 != 0);
+
+        increaseCounter(chosenTransition);
+
         return chosenTransition;
     }
 
-    public List<Integer> lookingForTransitions(int[] transitions){
-        ArrayList<Integer> indexTransitions = new ArrayList<>();
+    private int filterTransitions(List<Integer> transitions, Predicate<Integer> filter) {
+        return transitions.stream()
+                .filter(filter)
+                .findFirst()
+                .orElse(0);
+    }
 
-        for (int i = 0; i< TRANSITIONS_COUNT; i++){
-            if (transitions[i] == 1) {
-                indexTransitions.add(i);
-            }
-        }
+    private void increaseCounter(int transition) {
+        if (transition % 2 == 0) rightBranchCount++;
+        else leftBranchCount++;
 
-        return indexTransitions;
+        log.debug("Branch executions: L[" + leftBranchCount + "] R[" + rightBranchCount + "]");
     }
 }

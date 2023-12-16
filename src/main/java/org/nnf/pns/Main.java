@@ -1,57 +1,27 @@
 package org.nnf.pns;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.log4j.Logger;
-import org.nnf.pns.model.PetriNet;
+import org.nnf.pns.model.policy.BalancedPolicy;
+import org.nnf.pns.model.policy.Policy;
+import org.nnf.pns.service.Monitor;
 
-import static org.nnf.pns.util.Constants.INCIDENCE_MATRIX;
-import static org.nnf.pns.util.Constants.INITIAL_MARKING;
+import static org.nnf.pns.util.Concurrency.createGenerator;
+import static org.nnf.pns.util.Concurrency.createWorker;
 
 public class Main {
-    private static final Logger log = Logger.getLogger(Main.class);
-
     public static void main(String[] args) {
-        PetriNet pn = new PetriNet(
-                new Array2DRowRealMatrix(INCIDENCE_MATRIX),
-                new Array2DRowRealMatrix(INITIAL_MARKING)
-        );
+        Policy policy = BalancedPolicy.getInstance();
+        Monitor monitor = Monitor.getInstance(policy);
 
-        pn.getSensitizedTransitions();
+        createWorker("PURPLE", monitor, 1, 3);
+        createWorker("PINK", monitor, 2, 4);
+        createWorker("ORANGE", monitor);
+        createWorker("YELLOW", monitor, 5, 7);
+        createWorker("GREEN", monitor, 6, 8);
+        createWorker("RED", monitor);
+        createWorker("BROWN", monitor, 9, 11);
+        createWorker("LIGHT-BLUE", monitor, 10, 12);
+        createWorker("MAGENTA", monitor, 13, 14);
 
-        pn.fire(0);
-
-        pn.getSensitizedTransitions();
-
-        pn.fire(1);
-
-        pn.getSensitizedTransitions();
-
-        pn.fire(3);
-
-        pn.getSensitizedTransitions();
-
-        pn.fire(6);
-
-        pn.getSensitizedTransitions();
-
-        pn.fire(8);
-
-        pn.getSensitizedTransitions();
-
-        pn.fire(9);
-
-        pn.getSensitizedTransitions();
-
-        pn.fire(11);
-
-        pn.getSensitizedTransitions();
-
-        pn.fire(13);
-
-        pn.getSensitizedTransitions();
-
-        pn.fire(14);
-
-        pn.getSensitizedTransitions();
+        createGenerator(monitor);
     }
 }
