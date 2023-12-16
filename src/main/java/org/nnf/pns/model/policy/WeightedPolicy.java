@@ -1,10 +1,8 @@
 package org.nnf.pns.model.policy;
 
 import lombok.NoArgsConstructor;
-import org.apache.log4j.Logger;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 import static lombok.AccessLevel.PRIVATE;
 

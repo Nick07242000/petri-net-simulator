@@ -1,6 +1,5 @@
 package org.nnf.pns;
 
-import org.nnf.pns.model.policy.BalancedPolicy;
 import org.nnf.pns.model.policy.Policy;
 import org.nnf.pns.model.policy.WeightedPolicy;
 import org.nnf.pns.service.Monitor;
