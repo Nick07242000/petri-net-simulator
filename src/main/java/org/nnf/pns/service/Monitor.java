@@ -56,8 +56,6 @@ public class Monitor {
     }
 
     public void fireTransition(int transition, boolean isTaken) {
-        log.debug("Thread firing for transition: " + transition);
-
         //Only on first call should mutex be taken
         if (!isTaken) tryAcquire(mutex);
 
@@ -71,12 +69,13 @@ public class Monitor {
         petriNet.fire(transition);
         timesFired[transition]++;
         firedTransitions.add("T" + transition);
+        log.debug("Transition " + transition + " fired successfully");
 
         //Check for program finish
         if (finalized()) {
             log.debug("PROGRAM FINISHED");
             log.info(join("", firedTransitions));
-            return;
+            System.exit(0);
         }
 
         checkNextTransition();
@@ -90,13 +89,17 @@ public class Monitor {
     private void moveToWaiting(int transition) {
         log.debug("Thread moved to waiting list for transition: " + transition);
 
-        //Increase waiting count and ????
+        //Increase waiting count
         waiting[transition]++;
-        tryAcquire(queues[transition]);
-        fireTransition(transition, true);
 
         //Release the monitor
         mutex.release();
+
+        //Sleep thread
+        tryAcquire(queues[transition]);
+
+        //Resume on wake up
+        fireTransition(transition, true);
     }
 
     private void checkNextTransition() {
@@ -115,6 +118,6 @@ public class Monitor {
     }
 
     private boolean finalized() {
-        return timesFired[TRANSITIONS_COUNT - 1] == LIMIT_FIRING && petriNet.isFinished();
+        return timesFired[TRANSITIONS_COUNT - 1] == LIMIT_FIRING && petriNet.hasInitialState();
     }
 }

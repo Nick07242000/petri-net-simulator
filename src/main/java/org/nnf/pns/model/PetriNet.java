@@ -79,11 +79,10 @@ public class PetriNet {
             }
         }
 
-        log.debug("Sensitized Transitions: " + indexTransitions);
         return indexTransitions;
     }
 
-    public boolean isFinished() {
+    public boolean hasInitialState() {
         return deepEquals(currentMarking.getData(), INITIAL_MARKING);
     }
 

@@ -23,8 +23,8 @@ public class BalancedPolicy implements Policy {
     @Override
     public synchronized int choose(List<Integer> transitions) {
         //If no transitions are sensitized choose T0
-        if (transitions.isEmpty())
-            return 0;
+        if (transitions.size() == 1)
+            return transitions.get(0);
 
         //Balance branches
         int chosenTransition = leftBranchCount >= rightBranchCount ?

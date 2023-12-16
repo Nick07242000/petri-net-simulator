@@ -17,7 +17,7 @@ public class Worker implements Runnable {
     @Override
     public void run() {
         for (int i = 0; i < LIMIT_FIRING; i++) {
-            for(int j = 0; j < TRANSITIONS_COUNT; j++) {
+            for (int j = 0; j < TRANSITIONS_COUNT; j++) {
                 if (transition[j] == 1) {
                     log.debug("Thread " + currentThread().getName() + " firing transition " + j);
                     monitor.fireTransition(j, false);
