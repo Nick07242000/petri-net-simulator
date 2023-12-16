@@ -13,6 +13,7 @@ import java.util.concurrent.Semaphore;
 import static java.lang.String.join;
 import static java.util.Arrays.fill;
 import static java.util.stream.IntStream.range;
+import static org.nnf.pns.util.Concurrency.delay;
 import static org.nnf.pns.util.Concurrency.tryAcquire;
 import static org.nnf.pns.util.Constants.*;
 
@@ -27,11 +28,13 @@ public class Monitor {
     private final int[] waiting;
     private final int[] timesFired;
     private final List<String> firedTransitions;
+    private final List<Long> queueCortesy;
 
     private Monitor(Policy policy) {
         this.petriNet = new PetriNet(
                 new Array2DRowRealMatrix(INCIDENCE_MATRIX),
-                new Array2DRowRealMatrix(INITIAL_MARKING)
+                new Array2DRowRealMatrix(INITIAL_MARKING),
+                new long[TRANSITIONS_COUNT]
         );
 
         this.policy = policy;
@@ -48,6 +51,7 @@ public class Monitor {
         this.timesFired = new int[TRANSITIONS_COUNT];
 
         this.firedTransitions = new ArrayList<>();
+        this.queueCortesy= new ArrayList<Long>();
     }
 
     public static Monitor getInstance(Policy policy) {
@@ -55,7 +59,7 @@ public class Monitor {
         return instance;
     }
 
-    public void fireTransition(int transition, boolean isTaken) {
+    public void fireTransition(int transition, boolean isTaken) throws InterruptedException {
         //Only on first call should mutex be taken
         if (!isTaken) tryAcquire(mutex);
 
@@ -65,11 +69,21 @@ public class Monitor {
             return;
         }
 
+        if(petriNet.isTemporary(transition)) {
+            if (!petriNet.timeWindowTest(petriNet.getTimeStamp(transition))){
+                queueCortesy.add(transition);
+                mutex.release();
+                delay((int) (ALFA-petriNet.getTimeStamp(transition)));
+                queues[transition].acquire();
+            }
+        }
+
         //Fire the transition, evolve current marking
-        petriNet.fire(transition);
-        timesFired[transition]++;
-        firedTransitions.add("T" + transition);
-        log.debug("Transition " + transition + " fired successfully");
+        if(petriNet.fire(transition)) {
+            timesFired[transition]++;
+            firedTransitions.add("T" + transition);
+            log.debug("Transition " + transition + " fired successfully");
+        }
 
         //Check for program finish
         if (finalized()) {
@@ -97,6 +111,11 @@ public class Monitor {
 
         //Sleep thread
         tryAcquire(queues[transition]);
+
+        if(!queueCortesy.isEmpty()){
+            int releaseThis = queueCortesy.get(0);
+
+        }
 
         //Resume on wake up
         fireTransition(transition, true);
