@@ -81,7 +81,7 @@ public class PetriNet {
             }
         }
 
-        log.debug("Sensitized Transitions: : " + indexTransitions);
+        log.debug("Sensitized Transitions: " + indexTransitions);
         return indexTransitions;
     }
 
