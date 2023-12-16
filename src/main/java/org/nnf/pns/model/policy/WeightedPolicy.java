@@ -7,9 +7,9 @@ import java.util.List;
 import static lombok.AccessLevel.PRIVATE;
 
 @NoArgsConstructor(access = PRIVATE)
-public class BalancedPolicy extends Policy {
+public class WeightedPolicy extends Policy {
     public static Policy getInstance() {
-        if (instance == null) instance = new BalancedPolicy();
+        if (instance == null) instance = new WeightedPolicy();
         return instance;
     }
 
@@ -20,7 +20,7 @@ public class BalancedPolicy extends Policy {
             return transitions.get(0);
 
         //Balance branches
-        int chosenTransition = leftBranchCount >= rightBranchCount ?
+        int chosenTransition = leftBranchCount >= 4 * rightBranchCount ?
                 filterTransitions(transitions, t -> t % 2 == 0) :
                 filterTransitions(transitions, t -> t % 2 != 0);
 
