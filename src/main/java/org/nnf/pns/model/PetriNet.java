@@ -41,8 +41,6 @@ public class PetriNet {
                 .transpose();
 
         log.debug("New Marking: " + stringifyArray(currentMarking.getRow(0)));
-
-        log.info("T" + Arrays.toString(transitions));
     }
 
     public boolean areSensitized(int... transitions) {

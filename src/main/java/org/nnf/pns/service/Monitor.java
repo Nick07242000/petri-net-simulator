@@ -6,9 +6,11 @@ import org.apache.log4j.Logger;
 import org.nnf.pns.model.PetriNet;
 import org.nnf.pns.model.policy.Policy;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import static java.lang.String.join;
 import static java.util.Arrays.fill;
 import static java.util.stream.IntStream.range;
 import static org.nnf.pns.util.Concurrency.tryAcquire;
@@ -24,6 +26,7 @@ public class Monitor {
     private final Semaphore[] queues;
     private final int[] waiting;
     private final int[] timesFired;
+    private final List<String> firedTransitions;
 
     private Monitor(Policy policy) {
         this.petriNet = new PetriNet(
@@ -42,7 +45,9 @@ public class Monitor {
         this.waiting = new int[TRANSITIONS_COUNT];
         fill(this.waiting, 0);
 
-        this.timesFired =new int[TRANSITIONS_COUNT];
+        this.timesFired = new int[TRANSITIONS_COUNT];
+
+        this.firedTransitions = new ArrayList<>();
     }
 
     public static Monitor getInstance(Policy policy) {
@@ -65,10 +70,12 @@ public class Monitor {
         //Fire the transition, evolve current marking
         petriNet.fire(transition);
         timesFired[transition]++;
+        firedTransitions.add("T" + transition);
 
         //Check for program finish
         if (finalized()) {
             log.debug("PROGRAM FINISHED");
+            log.info(join("", firedTransitions));
             return;
         }
 

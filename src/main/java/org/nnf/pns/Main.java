@@ -15,12 +15,12 @@ public class Main {
         createGenerator(monitor);
         createWorker("PURPLE", monitor, 1, 3);
         createWorker("PINK", monitor, 2, 4);
-        createWorker("ORANGE", monitor);
-        createWorker("YELLOW", monitor, 5, 7);
-        createWorker("GREEN", monitor, 6, 8);
-        createWorker("RED", monitor);
-        createWorker("BROWN", monitor, 9, 11);
-        createWorker("LIGHT-BLUE", monitor, 10, 12);
-        createWorker("MAGENTA", monitor, 13, 14);
+        //createWorker("ORANGE", monitor);
+        //createWorker("YELLOW", monitor, 5, 7);
+        //createWorker("GREEN", monitor, 6, 8);
+        //createWorker("RED", monitor);
+        //createWorker("BROWN", monitor, 9, 11);
+        //createWorker("LIGHT-BLUE", monitor, 10, 12);
+        //createWorker("MAGENTA", monitor, 13, 14);
     }
 }
