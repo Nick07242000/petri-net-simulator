@@ -1,42 +1,26 @@
 package org.nnf.pns;
 
-import org.apache.log4j.Logger;
 import org.nnf.pns.model.policy.BalancedPolicy;
 import org.nnf.pns.model.policy.Policy;
-import org.nnf.pns.service.Generator;
 import org.nnf.pns.service.Monitor;
-import org.nnf.pns.service.Worker;
+
+import static org.nnf.pns.util.Concurrency.createGenerator;
+import static org.nnf.pns.util.Concurrency.createWorker;
 
 public class Main {
-    private static final Logger log = Logger.getLogger(Main.class);
-
     public static void main(String[] args) {
-
-
         Policy policy = BalancedPolicy.getInstance();
         Monitor monitor = Monitor.getInstance(policy);
 
-        Thread Tazul = new Thread(new Generator(monitor));
-        Thread Trosa = new Thread(new Worker(monitor, new int[] {0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
-        Thread Tvioleta = new Thread(new Worker(monitor, new int[] {0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
-        Thread Tnaranja = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
-        Thread Tamarillo = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0}));
-        Thread Tverde = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0}));
-        Thread Trojo = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
-        Thread Tmarron = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0}));
-        Thread Tceleste = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0}));
-        Thread Tmagenta = new Thread(new Worker(monitor, new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1}));
-
-        Tazul.start();
-        log.debug("Hilo generador iniciado");
-        Trosa.start();
-        Tvioleta.start();
-        Tamarillo.start();
-        Tverde.start();
-        Tmarron.start();
-        Tceleste.start();
-        Tmagenta.start();
-        log.debug("Hilos iniciados: TODOS");
-
+        createGenerator(monitor);
+        createWorker("PURPLE", monitor, 1, 3);
+        createWorker("PINK", monitor, 2, 4);
+        createWorker("ORANGE", monitor);
+        createWorker("YELLOW", monitor, 5, 7);
+        createWorker("GREEN", monitor, 6, 8);
+        createWorker("RED", monitor);
+        createWorker("BROWN", monitor, 9, 11);
+        createWorker("LIGHT-BLUE", monitor, 10, 12);
+        createWorker("MAGENTA", monitor, 13, 14);
     }
 }
