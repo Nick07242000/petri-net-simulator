@@ -85,7 +85,6 @@ public class PetriNet {
         return indexTransitions;
     }
 
-
     public boolean isFinished() {
         return deepEquals(currentMarking.getData(), INITIAL_MARKING);
     }
