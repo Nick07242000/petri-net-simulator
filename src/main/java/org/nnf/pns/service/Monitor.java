@@ -28,7 +28,7 @@ public class Monitor {
     private final int[] waiting;
     private final int[] timesFired;
     private final List<String> firedTransitions;
-    private final List<Long> queueCortesy;
+    private final List<String> queueCortesy;
 
     private Monitor(Policy policy) {
         this.petriNet = new PetriNet(
@@ -51,7 +51,7 @@ public class Monitor {
         this.timesFired = new int[TRANSITIONS_COUNT];
 
         this.firedTransitions = new ArrayList<>();
-        this.queueCortesy= new ArrayList<Long>();
+        this.queueCortesy= new ArrayList<String>();
     }
 
     public static Monitor getInstance(Policy policy) {
@@ -67,15 +67,6 @@ public class Monitor {
         if (!petriNet.isSensitized(transition) || this.waiting[transition] > 0) {
             moveToWaiting(transition);
             return;
-        }
-
-        if(petriNet.isTemporary(transition)) {
-            if (!petriNet.timeWindowTest(petriNet.getTimeStamp(transition))){
-                queueCortesy.add(transition);
-                mutex.release();
-                delay((int) (ALFA-petriNet.getTimeStamp(transition)));
-                queues[transition].acquire();
-            }
         }
 
         //Fire the transition, evolve current marking
@@ -100,7 +91,7 @@ public class Monitor {
         }
     }
 
-    private void moveToWaiting(int transition) {
+    private void moveToWaiting(int transition) throws InterruptedException {
         log.debug("Thread moved to waiting list for transition: " + transition);
 
         //Increase waiting count
@@ -111,11 +102,6 @@ public class Monitor {
 
         //Sleep thread
         tryAcquire(queues[transition]);
-
-        if(!queueCortesy.isEmpty()){
-            int releaseThis = queueCortesy.get(0);
-
-        }
 
         //Resume on wake up
         fireTransition(transition, true);
@@ -138,5 +124,15 @@ public class Monitor {
 
     private boolean finalized() {
         return timesFired[TRANSITIONS_COUNT - 1] == LIMIT_FIRING && petriNet.hasInitialState();
+    }
+
+    public boolean withinTimeWindow(int transition){
+        if(petriNet.isTemporary(transition)) {
+            return petriNet.timeWindowTest(petriNet.getTimeStamp(transition));
+        }else return true;
+    }
+
+    public void waitingForTime(int transition){
+        delay((int) (ALFA-petriNet.getTimeStamp(transition)));
     }
 }

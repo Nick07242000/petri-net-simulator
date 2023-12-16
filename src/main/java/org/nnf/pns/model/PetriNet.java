@@ -34,12 +34,6 @@ public class PetriNet {
             log.debug("Transitions not sensitized: fire cannot be performed");
             return false;
         }
-        if(isTemporary(transitions)) {
-            if (!timeWindowTest(timeStamp[transitions[0]])){ //suponiendo el disparo de una sola transicion
-                delay((int) (ALFA -timeStamp[transitions[0]]));
-
-            }
-        }
 
         RealMatrix sequenceMatrix = new Array2DRowRealMatrix(createSequence(transitions));
 
@@ -50,6 +44,7 @@ public class PetriNet {
                 .transpose();
 
         log.debug("New Marking: " + stringifyArray(currentMarking.getRow(0)));
+        resetWaiting();
         return true;
     }
 
@@ -79,14 +74,7 @@ public class PetriNet {
         int[] sensitizedTransitions = new int[TRANSITIONS_COUNT];
 
         for (int i = 0; i < TRANSITIONS_COUNT; i++) {
-            if(isSensitized(i)){
-                sensitizedTransitions[i]=1;
-                if(isTemporary(i)){
-                    timeStamp[i]=System.currentTimeMillis();
-                }else timeStamp[i]=0;
-            }else{
-                sensitizedTransitions[i]=0;
-            }
+            sensitizedTransitions[i] = isSensitized(i) ? 1 : 0;
         }
 
         log.debug("Sensitized Transitions: " + stringifyArray(sensitizedTransitions));
@@ -111,6 +99,16 @@ public class PetriNet {
      }
     public boolean hasInitialState() {
         return deepEquals(currentMarking.getData(), INITIAL_MARKING);
+    }
+
+    public void resetWaiting() {
+        for (int i=0; i<TEMPORARY_TRANSITIONS.length;i++) {
+            if (isSensitized(i)) {
+                if (isTemporary(i)) timeStamp[i] = System.currentTimeMillis();
+            } else {
+                timeStamp[i] = 0;
+            }
+        }
     }
 
 }
