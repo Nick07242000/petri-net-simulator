@@ -10,8 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Boolean.TRUE;
-import static java.util.Arrays.deepEquals;
-import static java.util.Arrays.stream;
+import static java.util.Arrays.*;
 import static org.nnf.pns.util.Constants.*;
 import static org.nnf.pns.util.Net.createSequence;
 import static org.nnf.pns.util.Net.stringifyArray;
@@ -82,8 +81,12 @@ public class PetriNet {
         return indexTransitions;
     }
 
+    public boolean conflictPresent(int transition, int competitor) {
+        return asList(CONFLICTS).contains(transition) &&
+                getSensitizedTransitionNumbers().contains(competitor);
+    }
+
     public boolean hasInitialState() {
         return deepEquals(currentMarking.getData(), INITIAL_MARKING);
     }
-
 }

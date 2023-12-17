@@ -83,18 +83,18 @@ public class Monitor {
     }
 
     private boolean canBeFired(int transition) {
+        //Check if its sensitized
         if (!petriNet.isSensitized(transition))
             return false;
 
+        //Check if no threads are already waiting
         if (this.waiting[transition] > 0)
             return false;
 
-        if (asList(CONFLICTS).contains(transition)) {
-            int conflict = transition + (transition % 2 == 0 ? -1 : 1);
-
-            if (petriNet.getSensitizedTransitionNumbers().contains(conflict))
-                return policy.choose(asList(transition, conflict)) == transition;
-        }
+        //Check for a conflict
+        int competitor = transition + (transition % 2 == 0 ? -1 : 1);
+        if (petriNet.conflictPresent(transition, competitor))
+            return policy.choose(asList(transition, competitor)) == transition;
 
         return true;
     }
