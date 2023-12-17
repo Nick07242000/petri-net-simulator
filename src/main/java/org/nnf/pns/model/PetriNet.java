@@ -28,7 +28,7 @@ public class PetriNet {
         log.debug("Firing transitions: " + Arrays.toString(transitions));
 
         if (!areSensitized(transitions)) {
-            log.error("Transitions not sensitized: fire cannot be performed");
+            log.debug("Transitions not sensitized: fire cannot be performed");
             return;
         }
 

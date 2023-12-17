@@ -22,7 +22,7 @@ public final class Concurrency {
         try {
             s.acquire();
         } catch (InterruptedException e) {
-            log.error("Error acquiring semaphore: {}", e);
+            log.debug("Error acquiring semaphore:", e);
             currentThread().interrupt();
         }
     }
@@ -31,7 +31,7 @@ public final class Concurrency {
         try {
             sleep(ms);
         } catch (InterruptedException e){
-            log.error(e.getMessage());
+            log.debug("Error on thread delay:", e);
             currentThread().interrupt();
         }
     }

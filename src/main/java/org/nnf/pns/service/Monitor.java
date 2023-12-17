@@ -15,6 +15,7 @@ import static java.util.Arrays.fill;
 import static java.util.stream.IntStream.range;
 import static org.nnf.pns.util.Concurrency.tryAcquire;
 import static org.nnf.pns.util.Constants.*;
+import static org.nnf.pns.util.Regex.callRegexAnalyzer;
 
 public class Monitor {
     private static final Logger log = Logger.getLogger(Monitor.class);
@@ -72,11 +73,8 @@ public class Monitor {
         log.debug("Transition " + transition + " fired successfully");
 
         //Check for program finish
-        if (finalized()) {
-            log.debug("PROGRAM FINISHED");
-            log.info(join("", firedTransitions));
-            System.exit(0);
-        }
+        if (finalized())
+            handleFinalized();
 
         checkNextTransition();
 
@@ -118,6 +116,13 @@ public class Monitor {
     }
 
     private boolean finalized() {
-        return timesFired[TRANSITIONS_COUNT - 1] == LIMIT_FIRING && petriNet.hasInitialState();
+        return timesFired[TRANSITIONS_COUNT - 1] == MAX_GENERATED && petriNet.hasInitialState();
+    }
+
+    private void handleFinalized() {
+        log.debug("PROGRAM FINISHED");
+        log.info(join("", firedTransitions));
+        callRegexAnalyzer();
+        System.exit(0);
     }
 }
