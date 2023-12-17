@@ -28,13 +28,13 @@ public class Monitor {
     private final int[] waiting;
     private final int[] timesFired;
     private final List<String> firedTransitions;
-    private final List<String> queueCortesy;
+    private final int[] queueSleeping;
 
     private Monitor(Policy policy) {
         this.petriNet = new PetriNet(
                 new Array2DRowRealMatrix(INCIDENCE_MATRIX),
                 new Array2DRowRealMatrix(INITIAL_MARKING),
-                new long[TRANSITIONS_COUNT]
+                new long[TRANSITIONS_COUNT],  0
         );
 
         this.policy = policy;
@@ -51,7 +51,7 @@ public class Monitor {
         this.timesFired = new int[TRANSITIONS_COUNT];
 
         this.firedTransitions = new ArrayList<>();
-        this.queueCortesy= new ArrayList<String>();
+        this.queueSleeping=new int[TRANSITIONS_COUNT];
     }
 
     public static Monitor getInstance(Policy policy) {
@@ -64,11 +64,17 @@ public class Monitor {
         if (!isTaken) tryAcquire(mutex);
 
         //Check if transition can be fired
-        if (!petriNet.isSensitized(transition) || this.waiting[transition] > 0) {
+        if (!petriNet.isSensitized(transition) || this.queueSleeping[transition] > 0) {
             moveToWaiting(transition);
             return;
         }
-
+        long canFire=petriNet.timeWindowTest(transition);
+        if(canFire==-1){
+            mutex.release();
+            fireTransition(transition,false);
+            return;
+        }
+        if(canFire==0){
         //Fire the transition, evolve current marking
         if(petriNet.fire(transition)) {
             timesFired[transition]++;
@@ -88,6 +94,15 @@ public class Monitor {
         if (!isTaken) {
             mutex.release();
             log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
+        }
+        }
+        else{
+            log.debug("Thread moved to sleeping queue for transition: " + transition);
+            queueSleeping[transition]=1;
+            mutex.release();
+           delay((int) canFire);
+            queueSleeping[transition]=0;
+            fireTransition(transition, true);
         }
     }
 
@@ -126,13 +141,4 @@ public class Monitor {
         return timesFired[TRANSITIONS_COUNT - 1] == LIMIT_FIRING && petriNet.hasInitialState();
     }
 
-    public boolean withinTimeWindow(int transition){
-        if(petriNet.isTemporary(transition)) {
-            return petriNet.timeWindowTest(petriNet.getTimeStamp(transition));
-        }else return true;
-    }
-
-    public void waitingForTime(int transition){
-        delay((int) (ALFA-petriNet.getTimeStamp(transition)));
-    }
 }

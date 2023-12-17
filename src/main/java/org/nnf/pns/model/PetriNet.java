@@ -6,9 +6,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.log4j.Logger;
 import org.nnf.pns.util.Constants;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.deepEquals;
@@ -25,6 +23,7 @@ public class PetriNet {
     private final RealMatrix incidenceMatrix;
     private RealMatrix currentMarking;
     private long[] timeStamp;
+    private long currentPeriod;
 
     public synchronized boolean fire(int... transitions) {
         log.debug("Current Marking: " + stringifyArray(currentMarking.getRow(0)));
@@ -34,7 +33,7 @@ public class PetriNet {
             log.debug("Transitions not sensitized: fire cannot be performed");
             return false;
         }
-
+        int[] sensitizedBeforeFire=getSensitizedTransitions();
         RealMatrix sequenceMatrix = new Array2DRowRealMatrix(createSequence(transitions));
 
         currentMarking = currentMarking
@@ -42,10 +41,20 @@ public class PetriNet {
                 .add(incidenceMatrix.multiply(sequenceMatrix))
                 .getColumnMatrix(0)
                 .transpose();
-
+        int[] sensitizedAfterFire=getSensitizedTransitions();
+        resetSensitizedTime(sensitizedBeforeFire, sensitizedAfterFire);
         log.debug("New Marking: " + stringifyArray(currentMarking.getRow(0)));
-        resetWaiting();
         return true;
+    }
+
+    private void resetSensitizedTime(int[] sensitizedBeforeFire, int[] sensitizedAfterFire) {
+        for(int i=0; i<TRANSITIONS_COUNT; i++){
+            if(sensitizedBeforeFire[i]==0&&sensitizedAfterFire[i]==1){
+                setSenzitizedTransition(i, true);
+            }else if(sensitizedBeforeFire[i]==1&&sensitizedAfterFire[i]==0){
+                setSenzitizedTransition(i, false);
+            }
+        }
     }
 
     public boolean areSensitized(int... transitions) {
@@ -54,8 +63,13 @@ public class PetriNet {
                 .allMatch(b -> b.equals(TRUE));
     }
 
-    public boolean timeWindowTest(long timeStamp) {
-        return ALFA<(System.currentTimeMillis()-timeStamp)&&(System.currentTimeMillis()-timeStamp)< BETA;
+    public synchronized long timeWindowTest(int transition) {
+        if(!isTemporary(transition))return 0;
+        currentPeriod=getCurrentPeriod(transition);
+        log.debug("CurrentPeriod of transition "+transition+" : " + currentPeriod);
+        if(currentPeriod<ALFA) return ALFA-currentPeriod;
+        if(currentPeriod<BETA)return 0;
+        return -1;
     }
 
     public boolean isSensitized(int transition) {
@@ -66,8 +80,11 @@ public class PetriNet {
         return true;
     }
 
-    public boolean isTemporary(int... transitions){
-        return Arrays.stream(TEMPORARY_TRANSITIONS).anyMatch(numero -> Arrays.asList(transitions).contains(numero));
+    public boolean isTemporary(int transition){
+        for (int temporaryTransition : TEMPORARY_TRANSITIONS) {
+            if(temporaryTransition==transition) return true;
+        }
+        return false;
     }
 
     public int[] getSensitizedTransitions() {
@@ -101,14 +118,12 @@ public class PetriNet {
         return deepEquals(currentMarking.getData(), INITIAL_MARKING);
     }
 
-    public void resetWaiting() {
-        for (int i=0; i<TEMPORARY_TRANSITIONS.length;i++) {
-            if (isSensitized(i)) {
-                if (isTemporary(i)) timeStamp[i] = System.currentTimeMillis();
-            } else {
-                timeStamp[i] = 0;
-            }
-        }
+    public void setSenzitizedTransition(int transition, boolean sensitizedNow) {
+       if(sensitizedNow) timeStamp[transition]=System.currentTimeMillis();
+       else timeStamp[transition]=0;
+    }
+    public long getCurrentPeriod(int transition){
+        return System.currentTimeMillis()-timeStamp[transition];
     }
 
 }

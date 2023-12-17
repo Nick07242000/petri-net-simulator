@@ -15,7 +15,11 @@ public class Generator implements Runnable{
     public void run() {
         for (int i = 0; i < LIMIT_FIRING; i++) {
             log.debug("Generating mark...");
-            monitor.fireTransition(0, false);
+            try {
+                monitor.fireTransition(0, false);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             //delay(1000);
         }

@@ -20,11 +20,12 @@ public class Worker implements Runnable {
             for (int j = 0; j < TRANSITIONS_COUNT; j++) {
                 if (transition[j] == 1) {
                     log.debug("Thread " + currentThread().getName() + " firing transition " + j);
-                    if(!monitor.withinTimeWindow(j)){
-                        monitor.waitingForTime(j);
-                    }
 
-                    monitor.fireTransition(j, false);
+                    try {
+                        monitor.fireTransition(j, false);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }
