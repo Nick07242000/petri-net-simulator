@@ -17,7 +17,7 @@ public abstract class Policy {
         return transitions.stream()
                 .filter(filter)
                 .findFirst()
-                .orElse(0);
+                .orElseThrow(IllegalArgumentException::new);
     }
 
     protected void increaseCounter(int transition) {

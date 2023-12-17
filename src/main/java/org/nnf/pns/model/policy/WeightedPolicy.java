@@ -15,17 +15,14 @@ public class WeightedPolicy extends Policy {
 
     @Override
     public synchronized int choose(List<Integer> transitions) {
-        //If no transitions are sensitized choose T0
-        if (transitions.size() == 1)
-            return transitions.get(0);
-
         //Balance branches
-        int chosenTransition = leftBranchCount >= 4 * rightBranchCount ?
+        int chosen = leftBranchCount >= 4 * rightBranchCount ?
                 filterTransitions(transitions, t -> t % 2 == 0) :
                 filterTransitions(transitions, t -> t % 2 != 0);
 
-        increaseCounter(chosenTransition);
+        if (chosen == transitions.get(0))
+            increaseCounter(transitions.get(0));
 
-        return chosenTransition;
+        return chosen;
     }
 }

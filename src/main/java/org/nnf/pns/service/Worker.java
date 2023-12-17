@@ -22,7 +22,7 @@ public class Worker implements Runnable {
                     log.debug("Thread " + currentThread().getName() + " firing transition " + j);
                     if (TIMED_TRANSITIONS.get(transition[j]) != null)
                         delay(TIMED_TRANSITIONS.get(transition[j]));
-                    monitor.fireTransition(j, false);
+                    monitor.fireTransition(j);
                 }
             }
         }

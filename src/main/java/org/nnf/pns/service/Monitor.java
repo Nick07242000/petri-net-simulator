@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import static java.lang.String.join;
+import static java.util.Arrays.asList;
 import static java.util.Arrays.fill;
 import static java.util.stream.IntStream.range;
 import static org.nnf.pns.util.Concurrency.tryAcquire;
@@ -56,14 +57,13 @@ public class Monitor {
         return instance;
     }
 
-    public void fireTransition(int transition, boolean isTaken) {
-        //Only on first call should mutex be taken
-        if (!isTaken) tryAcquire(mutex);
+    public void fireTransition(int transition) {
+        tryAcquire(mutex);
 
         //Check if transition can be fired
-        if (!petriNet.isSensitized(transition) || this.waiting[transition] > 0) {
+        while (!canBeFired(transition)) {
             moveToWaiting(transition);
-            return;
+            tryAcquire(mutex);
         }
 
         //Fire the transition, evolve current marking
@@ -73,15 +73,30 @@ public class Monitor {
         log.debug("Transition " + transition + " fired successfully");
 
         //Check for program finish
-        if (finalized())
-            handleFinalized();
+        checkProgramEnd();
 
-        checkNextTransition();
+        //After executing transitions, check for newly sensitized ones
+        wakeUpUnlockedThreads();
 
-        if (!isTaken) {
-            mutex.release();
-            log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
+        mutex.release();
+        log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
+    }
+
+    private boolean canBeFired(int transition) {
+        if (!petriNet.isSensitized(transition))
+            return false;
+
+        if (this.waiting[transition] > 0)
+            return false;
+
+        if (asList(CONFLICTS).contains(transition)) {
+            int conflict = transition + (transition % 2 == 0 ? -1 : 1);
+
+            if (petriNet.getSensitizedTransitionNumbers().contains(conflict))
+                return policy.choose(asList(transition, conflict)) == transition;
         }
+
+        return true;
     }
 
     private void moveToWaiting(int transition) {
@@ -95,34 +110,27 @@ public class Monitor {
 
         //Sleep thread
         tryAcquire(queues[transition]);
-
-        //Resume on wake up
-        fireTransition(transition, true);
     }
 
-    private void checkNextTransition() {
-        //Get the next transition via policy
-        List<Integer> sensitized = petriNet.getSensitizedTransitionNumbers();
-        int nextTransition = policy.choose(sensitized);
-        log.debug("Chosen transition: " + nextTransition);
 
-        if (this.waiting[nextTransition] == 0)
-            return;
-
-        //Attempt to wake up thread
-        this.waiting[nextTransition]--;
-        log.debug("Waking up thread for transition: " + nextTransition);
-        queues[nextTransition].release();
+    private void wakeUpUnlockedThreads() {
+        //Check for waiting threads in the newly sensitized transitions
+        petriNet.getSensitizedTransitionNumbers()
+                .stream()
+                .filter(t -> this.waiting[t] != 0)
+                .forEachOrdered(t -> {
+                    this.waiting[t]--;
+                    log.debug("Waking up thread for transition: " + t);
+                    queues[t].release();
+                });
     }
 
-    private boolean finalized() {
-        return timesFired[TRANSITIONS_COUNT - 1] == MAX_GENERATED && petriNet.hasInitialState();
-    }
-
-    private void handleFinalized() {
-        log.debug("PROGRAM FINISHED");
-        log.info(join("", firedTransitions));
-        callRegexAnalyzer();
-        System.exit(0);
+    private void checkProgramEnd() {
+        if (timesFired[TRANSITIONS_COUNT - 1] == MAX_GENERATED && petriNet.hasInitialState()) {
+            log.debug("PROGRAM FINISHED");
+            log.info(join("", firedTransitions));
+            callRegexAnalyzer();
+            System.exit(0);
+        }
     }
 }
