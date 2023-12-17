@@ -68,7 +68,7 @@ public class PetriNet {
         currentPeriod=getCurrentPeriod(transition);
         log.debug("CurrentPeriod of transition "+transition+" : " + currentPeriod);
         if(currentPeriod<ALFA) return ALFA-currentPeriod;
-        if(currentPeriod<BETA)return 0;
+        if(currentPeriod>ALFA&&currentPeriod<BETA)return 0;
         return -1;
     }
 

@@ -28,7 +28,6 @@ public class Monitor {
     private final int[] waiting;
     private final int[] timesFired;
     private final List<String> firedTransitions;
-    private final int[] queueSleeping;
 
     private Monitor(Policy policy) {
         this.petriNet = new PetriNet(
@@ -51,7 +50,6 @@ public class Monitor {
         this.timesFired = new int[TRANSITIONS_COUNT];
 
         this.firedTransitions = new ArrayList<>();
-        this.queueSleeping=new int[TRANSITIONS_COUNT];
     }
 
     public static Monitor getInstance(Policy policy) {
@@ -64,7 +62,7 @@ public class Monitor {
         if (!isTaken) tryAcquire(mutex);
 
         //Check if transition can be fired
-        if (!petriNet.isSensitized(transition) || this.queueSleeping[transition] > 0) {
+        if (!petriNet.isSensitized(transition)) {
             moveToWaiting(transition);
             return;
         }
@@ -75,34 +73,36 @@ public class Monitor {
             return;
         }
         if(canFire==0){
-        //Fire the transition, evolve current marking
-        if(petriNet.fire(transition)) {
-            timesFired[transition]++;
-            firedTransitions.add("T" + transition);
-            log.debug("Transition " + transition + " fired successfully");
-        }
+            //Fire the transition, evolve current marking
+            if(petriNet.fire(transition)) {
+                timesFired[transition]++;
+                firedTransitions.add("T" + transition);
+                log.debug("Transition " + transition + " fired successfully");
+            }else{
+                mutex.release();
+                fireTransition(transition,false);
+            }
 
-        //Check for program finish
-        if (finalized()) {
-            log.debug("PROGRAM FINISHED");
-            log.info(join("", firedTransitions));
-            System.exit(0);
-        }
+            //Check for program finish
+            if (finalized()) {
+                log.debug("PROGRAM FINISHED");
+                log.info(join("", firedTransitions));
+                System.exit(0);
+            }
 
-        checkNextTransition();
+            checkNextTransition();
 
-        if (!isTaken) {
-            mutex.release();
-            log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
-        }
+            if (!isTaken) {
+                mutex.release();
+                log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
+            }
         }
         else{
             log.debug("Thread moved to sleeping queue for transition: " + transition);
-            queueSleeping[transition]=1;
             mutex.release();
-           delay((int) canFire);
-            queueSleeping[transition]=0;
-            fireTransition(transition, true);
+            delay((int) canFire);
+            log.debug("Thread desperto de la sleeping queue for transition: " + transition);
+            fireTransition(transition, false);
         }
     }
 
