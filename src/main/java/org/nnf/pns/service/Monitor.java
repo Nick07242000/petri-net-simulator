@@ -126,6 +126,7 @@ public class Monitor {
         //Get the next transition via policy
         List<Integer> sensitized = petriNet.getSensitizedTransitionNumbers();
         int nextTransition = policy.choose(sensitized);
+        if(nextTransition==-1) return;
         log.debug("Chosen transition: " + nextTransition);
 
         if (this.waiting[nextTransition] == 0)

@@ -43,6 +43,9 @@ public class PetriNet {
                 .transpose();
         int[] sensitizedAfterFire=getSensitizedTransitions();
         resetSensitizedTime(sensitizedBeforeFire, sensitizedAfterFire);
+        if(arePInvariantValid()) log.debug("P-invariants valid");
+        else log.debug("P-invariants are not valid");
+
         log.debug("New Marking: " + stringifyArray(currentMarking.getRow(0)));
         return true;
     }
@@ -68,7 +71,7 @@ public class PetriNet {
         currentPeriod=getCurrentPeriod(transition);
         log.debug("CurrentPeriod of transition "+transition+" : " + currentPeriod);
         if(currentPeriod<ALFA) return ALFA-currentPeriod;
-        if(currentPeriod>ALFA&&currentPeriod<BETA)return 0;
+        if(currentPeriod<BETA)return 0;
         return -1;
     }
 
@@ -124,6 +127,18 @@ public class PetriNet {
     }
     public long getCurrentPeriod(int transition){
         return System.currentTimeMillis()-timeStamp[transition];
+    }
+
+    public boolean arePInvariantValid(){
+        boolean ec1 = currentMarking.getEntry(0,1)+currentMarking.getEntry(0,3)==1;
+        boolean ec2 = currentMarking.getEntry(0, 5)+currentMarking.getEntry(0, 2)==1;
+        boolean ec3 =currentMarking.getEntry(0,14)+currentMarking.getEntry(0,13)+currentMarking.getEntry(0,15)==1;
+        boolean ec4 = currentMarking.getEntry(0,7)+currentMarking.getEntry(0,9)==1;
+        boolean ec5= currentMarking.getEntry(0,8)+currentMarking.getEntry(0, 11)==1;
+        boolean ec6 = currentMarking.getEntry(0,10)+currentMarking.getEntry(0, 11)+currentMarking.getEntry(0,9)==2;
+        boolean ec7 = currentMarking.getEntry(0, 18)+currentMarking.getEntry(0, 17)==1;
+        boolean ec8 = currentMarking.getEntry(0, 5)+currentMarking.getEntry(0,4)+currentMarking.getEntry(0,17)+currentMarking.getEntry(0,3)==3;
+        return ec1&&ec2&&ec3&&ec4&&ec5&&ec6&&ec7&&ec8;
     }
 
 }

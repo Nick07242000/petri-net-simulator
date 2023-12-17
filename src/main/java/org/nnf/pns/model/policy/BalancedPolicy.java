@@ -4,7 +4,9 @@ import lombok.NoArgsConstructor;
 import org.apache.log4j.Logger;
 
 import java.util.List;
+import java.util.Random;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -23,6 +25,7 @@ public class BalancedPolicy implements Policy {
     @Override
     public synchronized int choose(List<Integer> transitions) {
         //If no transitions are sensitized choose T0
+        log.debug("TAMAÑO DEL TRANSITION: "+transitions.size());
         if (transitions.size() == 1)
             return transitions.get(0);
 
