@@ -14,15 +14,15 @@ public class BalancedPolicy extends Policy {
     }
 
     @Override
-    public synchronized int choose(List<Integer> transitions) {
-        //Balance branches
-        int chosen = leftBranchCount >= rightBranchCount ?
-                filterTransitions(transitions, t -> t % 2 == 0) :
-                filterTransitions(transitions, t -> t % 2 != 0);
+    public synchronized int choose(List<Integer> transitions, List<String> firedTransitions) {
+        int leftTransition = filterTransitions(transitions, t -> t % 2 != 0);
+        int rightTransition = filterTransitions(transitions, t -> t % 2 == 0);
 
-        if (chosen == transitions.get(0))
-            increaseCounter(transitions.get(0));
+        long leftFiredTransitions = getFiredTransitions(firedTransitions, t -> t.equals("T" + leftTransition));
+        long rightFiredTransitions = getFiredTransitions(firedTransitions, t -> t.equals("T" + rightTransition));
 
-        return chosen;
+        return leftFiredTransitions >= rightFiredTransitions ?
+                rightTransition :
+                leftTransition;
     }
 }

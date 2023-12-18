@@ -14,15 +14,19 @@ public class WeightedPolicy extends Policy {
     }
 
     @Override
-    public synchronized int choose(List<Integer> transitions) {
-        //Balance branches
-        int chosen = leftBranchCount >= 4 * rightBranchCount ?
+    public synchronized int choose(List<Integer> transitions, List<String> firedTransitions) {
+        int leftTransition = filterTransitions(transitions, t -> t % 2 != 0);
+        int rightTransition = filterTransitions(transitions, t -> t % 2 == 0);
+
+        long leftFiredTransitions = getFiredTransitions(firedTransitions, t -> t.equals("T" + leftTransition));
+        long rightFiredTransitions = getFiredTransitions(firedTransitions, t -> t.equals("T" + rightTransition));
+
+        boolean determinator = transitions.contains(9) ?
+                leftFiredTransitions >= 4 * rightFiredTransitions :
+                leftFiredTransitions >= rightFiredTransitions;
+
+        return determinator ?
                 filterTransitions(transitions, t -> t % 2 == 0) :
                 filterTransitions(transitions, t -> t % 2 != 0);
-
-        if (chosen == transitions.get(0))
-            increaseCounter(transitions.get(0));
-
-        return chosen;
     }
 }

@@ -94,7 +94,7 @@ public class Monitor {
         //Check for a conflict
         int competitor = transition + (transition % 2 == 0 ? -1 : 1);
         if (petriNet.conflictPresent(transition, competitor))
-            return policy.choose(asList(transition, competitor)) == transition;
+            return policy.choose(asList(transition, competitor), firedTransitions) == transition;
 
         return true;
     }
