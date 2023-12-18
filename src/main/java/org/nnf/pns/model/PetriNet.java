@@ -107,7 +107,7 @@ public class PetriNet {
         boolean ec7 = evaluator.test(new int[] {17,18},1);
         boolean ec3 = evaluator.test(new int[] {13,14,15},1);
         boolean ec6 = evaluator.test(new int[] {9,10,11},2);
-        boolean ec8 = evaluator.test(new int[] {4,5,17},3);
+        boolean ec8 = evaluator.test(new int[] {3,4,5,17},3);
 
         return ec1 && ec2 && ec3 && ec4 && ec5 && ec6 && ec7 && ec8;
     }
