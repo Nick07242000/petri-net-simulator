@@ -1,6 +1,5 @@
 package org.nnf.pns.model;
 
-import lombok.AllArgsConstructor;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.log4j.Logger;
@@ -9,23 +8,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.IntStream;
 
 import static java.lang.Boolean.TRUE;
+import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.*;
 import static java.util.stream.IntStream.of;
 import static org.nnf.pns.util.Constants.*;
 import static org.nnf.pns.util.Net.createSequence;
 import static org.nnf.pns.util.Net.stringifyArray;
 
-@AllArgsConstructor
 public class PetriNet {
     private static final Logger log = Logger.getLogger(PetriNet.class);
-
     private final RealMatrix incidenceMatrix;
     private RealMatrix currentMarking;
+    private final long[] timeStamps;
+
+    public PetriNet() {
+        this.incidenceMatrix = new Array2DRowRealMatrix(INCIDENCE_MATRIX);
+        this.currentMarking = new Array2DRowRealMatrix(INITIAL_MARKING);
+        this.timeStamps = new long[TRANSITIONS_COUNT];
+        fill(this.timeStamps, 0);
+    }
 
     public synchronized void fire(int... transitions) {
         log.debug("Current Marking: " + stringifyArray(currentMarking.getRow(0)));
@@ -46,8 +49,17 @@ public class PetriNet {
 
         log.debug("New Marking: " + stringifyArray(currentMarking.getRow(0)));
 
+        stream(transitions).forEach(t -> timeStamps[t] = 0);
+
         if (!arePInvariantValid())
             log.error("Fire error: P Invariants violated");
+    }
+
+    public synchronized int getTimeDelay(int transition) {
+        int time = (int) (currentTimeMillis() - timeStamps[transition]);
+
+        return time > TIMED_TRANSITIONS.get(transition) ?
+                0 : TIMED_TRANSITIONS.get(transition) - time;
     }
 
     public boolean areSensitized(int... transitions) {
@@ -62,6 +74,16 @@ public class PetriNet {
                 return false;
 
         return true;
+    }
+
+    public boolean isTimed(int transition) {
+        return TIMED_TRANSITIONS.keySet()
+                .stream()
+                .anyMatch(t -> t == transition);
+    }
+
+    public void setTimeStamp(int transition) {
+        timeStamps[transition] = currentTimeMillis();
     }
 
     public int[] getSensitizedTransitions() {

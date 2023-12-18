@@ -1,7 +1,6 @@
 package org.nnf.pns.service;
 
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.log4j.Logger;
 import org.nnf.pns.model.PetriNet;
 import org.nnf.pns.model.policy.Policy;
@@ -14,8 +13,10 @@ import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.fill;
 import static java.util.stream.IntStream.range;
+import static org.nnf.pns.util.Concurrency.delay;
 import static org.nnf.pns.util.Concurrency.tryAcquire;
-import static org.nnf.pns.util.Constants.*;
+import static org.nnf.pns.util.Constants.MAX_GENERATED;
+import static org.nnf.pns.util.Constants.TRANSITIONS_COUNT;
 import static org.nnf.pns.util.Regex.callRegexAnalyzer;
 
 public class Monitor {
@@ -31,10 +32,7 @@ public class Monitor {
     private final List<String> firedTransitions;
 
     private Monitor(Policy policy) {
-        this.petriNet = new PetriNet(
-                new Array2DRowRealMatrix(INCIDENCE_MATRIX),
-                new Array2DRowRealMatrix(INITIAL_MARKING)
-        );
+        this.petriNet = new PetriNet();
 
         this.policy = policy;
 
@@ -60,9 +58,16 @@ public class Monitor {
     public void fireTransition(int transition) {
         tryAcquire(mutex);
 
+        petriNet.setTimeStamp(transition);
+
         //Check if transition can be fired
-        while (!canBeFired(transition)) {
+        while (!canBeFired(transition))
             moveToWaiting(transition);
+
+        //Check if transition is timed
+        if (petriNet.isTimed(transition)) {
+            mutex.release();
+            delay(petriNet.getTimeDelay(transition));
             tryAcquire(mutex);
         }
 
@@ -110,6 +115,8 @@ public class Monitor {
 
         //Sleep thread
         tryAcquire(queues[transition]);
+
+        tryAcquire(mutex);
     }
 
 
