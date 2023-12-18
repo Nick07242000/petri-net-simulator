@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import org.apache.log4j.Logger;
 
 import static java.lang.Thread.currentThread;
-import static org.nnf.pns.util.Concurrency.delay;
-import static org.nnf.pns.util.Constants.*;
+import static org.nnf.pns.util.Constants.MAX_GENERATED;
+import static org.nnf.pns.util.Constants.TRANSITIONS_COUNT;
 
 @AllArgsConstructor
 public class Worker implements Runnable {
@@ -20,8 +20,6 @@ public class Worker implements Runnable {
             for (int j = 0; j < TRANSITIONS_COUNT; j++) {
                 if (transition[j] == 1) {
                     log.debug("Thread " + currentThread().getName() + " firing transition " + j);
-                    if (TIMED_TRANSITIONS.get(transition[j]) != null)
-                        delay(TIMED_TRANSITIONS.get(transition[j]));
                     monitor.fireTransition(j);
                 }
             }
