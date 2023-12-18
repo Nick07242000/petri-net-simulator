@@ -65,8 +65,11 @@ public class Monitor {
             moveToWaiting(transition);
 
         //Check if transition is timed
-        if (petriNet.isTimed(transition))
+        if (petriNet.isTimed(transition)) {
+            mutex.release();
             delay(petriNet.getTimeDelay(transition));
+            tryAcquire(mutex);
+        }
 
         //Fire the transition, evolve current marking
         petriNet.fire(transition);
