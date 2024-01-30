@@ -30,7 +30,7 @@ public class PetriNet {
         fill(this.timeStamps, 0);
     }
 
-    public synchronized void fire(int... transitions) {
+    public void fire(int... transitions) {
         log.debug("Current Marking: " + stringifyArray(currentMarking.getRow(0)));
         log.debug("Firing transitions: " + Arrays.toString(transitions));
 
@@ -55,7 +55,7 @@ public class PetriNet {
             log.error("Fire error: P Invariants violated");
     }
 
-    public synchronized int getTimeDelay(int transition) {
+    public int getTimeDelay(int transition) {
         int time = (int) (currentTimeMillis() - timeStamps[transition]);
 
         return time > TIMED_TRANSITIONS.get(transition) ?

@@ -29,6 +29,7 @@ public class Monitor {
     private final Semaphore[] queues;
     private final int[] waiting;
     private final int[] timesFired;
+    //TODO: boolean array to check for already waiting threads
     private final List<String> firedTransitions;
 
     private Monitor(Policy policy) {
@@ -64,6 +65,7 @@ public class Monitor {
         while (!canBeFired(transition))
             moveToWaiting(transition);
 
+        //TODO: Re check for sensitized -> recall fire transition
         //Check if transition is timed
         if (petriNet.isTimed(transition)) {
             mutex.release();
@@ -96,6 +98,7 @@ public class Monitor {
         if (this.waiting[transition] > 0)
             return false;
 
+        //TODO: Move this to wake up
         //Check for a conflict
         int competitor = transition + (transition % 2 == 0 ? -1 : 1);
         if (petriNet.conflictPresent(transition, competitor))
@@ -124,12 +127,12 @@ public class Monitor {
         //Check for waiting threads in the newly sensitized transitions
         petriNet.getSensitizedTransitionNumbers()
                 .stream()
-                .filter(t -> this.waiting[t] != 0)
-                .forEachOrdered(t -> {
+                .filter(t -> this.waiting[t] != 0);
+                /*.forEachOrdered(t -> {
                     this.waiting[t]--;
                     log.debug("Waking up thread for transition: " + t);
                     queues[t].release();
-                });
+                })*/
     }
 
     private void checkProgramEnd() {
