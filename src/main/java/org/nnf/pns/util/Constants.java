@@ -37,13 +37,13 @@ public final class Constants {
     public static final Map<Integer,Integer> TIMED_TRANSITIONS;
     static {
         TIMED_TRANSITIONS = new HashMap<>();
-        TIMED_TRANSITIONS.put(0,100);
-        TIMED_TRANSITIONS.put(3,150);
-        TIMED_TRANSITIONS.put(4,150);
-        TIMED_TRANSITIONS.put(7,200);
-        TIMED_TRANSITIONS.put(8,200);
-        TIMED_TRANSITIONS.put(11,150);
-        TIMED_TRANSITIONS.put(12,150);
-        TIMED_TRANSITIONS.put(14,100);
+        TIMED_TRANSITIONS.put(0,56);
+        TIMED_TRANSITIONS.put(3,50);
+        TIMED_TRANSITIONS.put(4,50);
+        TIMED_TRANSITIONS.put(7,40);
+        TIMED_TRANSITIONS.put(8,40);
+        TIMED_TRANSITIONS.put(11,10);
+        TIMED_TRANSITIONS.put(12,10);
+        TIMED_TRANSITIONS.put(14,59);
     }
 }

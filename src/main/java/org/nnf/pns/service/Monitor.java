@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import static java.lang.String.join;
+import static java.lang.System.currentTimeMillis;
 import static java.lang.System.exit;
 import static java.util.Arrays.fill;
 import static java.util.stream.IntStream.range;
@@ -86,10 +87,10 @@ public class Monitor {
         //After executing transitions, check for newly sensitized ones
         wakeUpNextTransition();
 
-        if (!isTaken) {
+        //if (!isTaken) {
             mutex.release();
             log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
-        }
+        //}
     }
 
     private void moveToWaiting(int transition) {
@@ -104,6 +105,7 @@ public class Monitor {
         //Sleep thread
         tryAcquire(queues[transition]);
 
+        tryAcquire(mutex);
         //Resume on wake up
         fireTransition(transition, true);
     }
@@ -126,6 +128,7 @@ public class Monitor {
             log.debug("PROGRAM FINISHED");
             log.info(join("", firedTransitions));
             callRegexAnalyzer();
+            log.debug("End time: "+currentTimeMillis());
             exit(0);
         }
     }
