@@ -5,11 +5,9 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiPredicate;
 
-import static java.lang.Boolean.TRUE;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.*;
 import static java.util.stream.IntStream.of;
@@ -28,18 +26,16 @@ public class PetriNet {
         this.currentMarking = new Array2DRowRealMatrix(INITIAL_MARKING);
         this.timeStamps = new long[TRANSITIONS_COUNT];
         fill(this.timeStamps, 0);
+        timeStamps[0] = currentTimeMillis();
     }
 
-    public void fire(int... transitions) {
+    public void fire(int transition) {
         log.debug("Current Marking: " + stringifyArray(currentMarking.getRow(0)));
-        log.debug("Firing transitions: " + Arrays.toString(transitions));
+        log.debug("Firing transition: " + transition);
 
-        if (!areSensitized(transitions)) {
-            log.error("Transitions not sensitized: fire cannot be performed");
-            return;
-        }
+        RealMatrix sequenceMatrix = new Array2DRowRealMatrix(createSequence(transition));
 
-        RealMatrix sequenceMatrix = new Array2DRowRealMatrix(createSequence(transitions));
+        int[] previouslySensitized = getSensitizedTransitions();
 
         currentMarking = currentMarking
                 .transpose()
@@ -49,23 +45,10 @@ public class PetriNet {
 
         log.debug("New Marking: " + stringifyArray(currentMarking.getRow(0)));
 
-        stream(transitions).forEach(t -> timeStamps[t] = 0);
+        setTimeStamps(previouslySensitized, getSensitizedTransitions());
 
         if (!arePInvariantValid())
             log.error("Fire error: P Invariants violated");
-    }
-
-    public int getTimeDelay(int transition) {
-        int time = (int) (currentTimeMillis() - timeStamps[transition]);
-
-        return time > TIMED_TRANSITIONS.get(transition) ?
-                0 : TIMED_TRANSITIONS.get(transition) - time;
-    }
-
-    public boolean areSensitized(int... transitions) {
-        return stream(transitions)
-                .mapToObj(this::isSensitized)
-                .allMatch(b -> b.equals(TRUE));
     }
 
     public boolean isSensitized(int transition) {
@@ -82,8 +65,24 @@ public class PetriNet {
                 .anyMatch(t -> t == transition);
     }
 
-    public void setTimeStamp(int transition) {
-        timeStamps[transition] = currentTimeMillis();
+    public boolean isInWindow(int transition) {
+        return currentTimeMillis() - timeStamps[transition] > TIMED_TRANSITIONS.get(transition);
+    }
+
+    public int getTimeDelay(int transition) {
+        int time = (int) (currentTimeMillis() - timeStamps[transition]);
+
+        return time > TIMED_TRANSITIONS.get(transition) ?
+                0 : TIMED_TRANSITIONS.get(transition) - time;
+    }
+
+    private void setTimeStamps(int[] previouslySensitized, int[] currentlySensitized) {
+        for (int i = 0; i < TRANSITIONS_COUNT; i++) {
+            if (previouslySensitized[i] == 0 && currentlySensitized[i] == 1)
+                timeStamps[i] = currentTimeMillis();
+            else if (previouslySensitized[i] == 1 && currentlySensitized[i] == 0)
+                timeStamps[i] = 0;
+        }
     }
 
     public int[] getSensitizedTransitions() {
@@ -106,11 +105,6 @@ public class PetriNet {
                 indexTransitions.add(i);
 
         return indexTransitions;
-    }
-
-    public boolean conflictPresent(int transition, int competitor) {
-        return asList(CONFLICTS).contains(transition) &&
-                getSensitizedTransitionNumbers().contains(competitor);
     }
 
     public boolean hasInitialState() {

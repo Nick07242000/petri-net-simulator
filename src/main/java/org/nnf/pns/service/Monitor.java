@@ -8,10 +8,12 @@ import org.nnf.pns.model.policy.Policy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Collectors;
 
 import static java.lang.String.join;
-import static java.util.Arrays.asList;
+import static java.lang.System.exit;
 import static java.util.Arrays.fill;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.nnf.pns.util.Concurrency.delay;
 import static org.nnf.pns.util.Concurrency.tryAcquire;
@@ -56,21 +58,22 @@ public class Monitor {
         return instance;
     }
 
-    public void fireTransition(int transition) {
-        tryAcquire(mutex);
-
-        petriNet.setTimeStamp(transition);
+    public void fireTransition(int transition, boolean isTaken) {
+        //Only on first call should mutex be taken
+        if (!isTaken) tryAcquire(mutex);
 
         //Check if transition can be fired
-        while (!canBeFired(transition))
+        if (!petriNet.isSensitized(transition)) {
             moveToWaiting(transition);
+            return;
+        }
 
-        //TODO: Re check for sensitized -> recall fire transition
-        //Check if transition is timed
-        if (petriNet.isTimed(transition)) {
+        //Check if transition is timed and within the time window (t > alpha)
+        if (petriNet.isTimed(transition) && !petriNet.isInWindow(transition)) {
             mutex.release();
             delay(petriNet.getTimeDelay(transition));
-            tryAcquire(mutex);
+            fireTransition(transition, false);
+            return;
         }
 
         //Fire the transition, evolve current marking
@@ -83,28 +86,12 @@ public class Monitor {
         checkProgramEnd();
 
         //After executing transitions, check for newly sensitized ones
-        wakeUpUnlockedThreads();
+        wakeUpNextTransition();
 
-        mutex.release();
-        log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
-    }
-
-    private boolean canBeFired(int transition) {
-        //Check if its sensitized
-        if (!petriNet.isSensitized(transition))
-            return false;
-
-        //Check if no threads are already waiting
-        if (this.waiting[transition] > 0)
-            return false;
-
-        //TODO: Move this to wake up
-        //Check for a conflict
-        int competitor = transition + (transition % 2 == 0 ? -1 : 1);
-        if (petriNet.conflictPresent(transition, competitor))
-            return policy.choose(asList(transition, competitor), firedTransitions) == transition;
-
-        return true;
+        if (!isTaken) {
+            mutex.release();
+            log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
+        }
     }
 
     private void moveToWaiting(int transition) {
@@ -119,20 +106,21 @@ public class Monitor {
         //Sleep thread
         tryAcquire(queues[transition]);
 
-        tryAcquire(mutex);
+        //Resume on wake up
+        fireTransition(transition, true);
     }
 
+    private void wakeUpNextTransition() {
+        //Ask the policy for the next transition to be fired
+        int next = policy.choose(petriNet.getSensitizedTransitionNumbers());
 
-    private void wakeUpUnlockedThreads() {
-        //Check for waiting threads in the newly sensitized transitions
-        petriNet.getSensitizedTransitionNumbers()
-                .stream()
-                .filter(t -> this.waiting[t] != 0);
-                /*.forEachOrdered(t -> {
-                    this.waiting[t]--;
-                    log.debug("Waking up thread for transition: " + t);
-                    queues[t].release();
-                })*/
+        //Check if the next transition already has a waiting thread
+        if (this.waiting[next] == 0)
+            return;
+
+        this.waiting[next]--;
+        log.debug("Waking up thread for transition: " + next);
+        queues[next].release();
     }
 
     private void checkProgramEnd() {
@@ -140,7 +128,7 @@ public class Monitor {
             log.debug("PROGRAM FINISHED");
             log.info(join("", firedTransitions));
             callRegexAnalyzer();
-            System.exit(0);
+            exit(0);
         }
     }
 }

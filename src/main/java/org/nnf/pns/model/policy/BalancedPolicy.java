@@ -2,8 +2,11 @@ package org.nnf.pns.model.policy;
 
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
 
 @NoArgsConstructor(access = PRIVATE)
@@ -14,15 +17,25 @@ public class BalancedPolicy extends Policy {
     }
 
     @Override
-    public synchronized int choose(List<Integer> transitions, List<String> firedTransitions) {
-        int leftTransition = filterTransitions(transitions, t -> t % 2 != 0);
-        int rightTransition = filterTransitions(transitions, t -> t % 2 == 0);
+    public int choose(List<Integer> transitions) {
+        if (transitions.size() == 1)
+            return transitions.get(0);
 
-        long leftFiredTransitions = getFiredTransitions(firedTransitions, t -> t.equals("T" + leftTransition));
-        long rightFiredTransitions = getFiredTransitions(firedTransitions, t -> t.equals("T" + rightTransition));
+        if (transitions.contains(13)) {
+            return 13;
+        }
 
-        return leftFiredTransitions >= rightFiredTransitions ?
-                rightTransition :
-                leftTransition;
+        if (transitions.contains(14)) {
+            return 14;
+        }
+
+        //Balance branches
+        int chosenTransition = leftFiredTransitions >= rightFiredTransitions ?
+                filterTransitions(transitions, t -> t % 2 == 0) :
+                filterTransitions(transitions, t -> t % 2 != 0);
+
+        increaseCounter(chosenTransition);
+
+        return chosenTransition;
     }
 }

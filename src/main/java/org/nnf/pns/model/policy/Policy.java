@@ -8,8 +8,10 @@ import java.util.function.Predicate;
 public abstract class Policy {
     protected static final Logger log = Logger.getLogger(Policy.class);
     protected static Policy instance;
+    protected int leftFiredTransitions = 0;
+    protected int rightFiredTransitions = 0;
 
-    public abstract int choose(List<Integer> transitions, List<String> firedTransitions);
+    public abstract int choose(List<Integer> transitions);
 
     protected int filterTransitions(List<Integer> transitions, Predicate<Integer> filter) {
         return transitions.stream()
@@ -18,9 +20,10 @@ public abstract class Policy {
                 .orElseThrow(IllegalArgumentException::new);
     }
 
-    protected long getFiredTransitions(List<String> transitions, Predicate<String> filter) {
-        return transitions.stream()
-                .filter(filter)
-                .count();
+    protected void increaseCounter(int transition) {
+        if (transition % 2 == 0) rightFiredTransitions++;
+        else leftFiredTransitions++;
+
+        log.debug("Branch executions: L[" + leftFiredTransitions + "] R[" + rightFiredTransitions + "]");
     }
 }
