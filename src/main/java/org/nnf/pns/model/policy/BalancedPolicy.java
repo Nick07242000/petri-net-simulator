@@ -2,11 +2,8 @@ package org.nnf.pns.model.policy;
 
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import static java.util.Arrays.asList;
 import static lombok.AccessLevel.PRIVATE;
 
 @NoArgsConstructor(access = PRIVATE)

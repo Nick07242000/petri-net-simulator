@@ -8,12 +8,10 @@ import org.nnf.pns.model.policy.Policy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
-import java.util.stream.Collectors;
 
 import static java.lang.String.join;
 import static java.lang.System.exit;
 import static java.util.Arrays.fill;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.nnf.pns.util.Concurrency.delay;
 import static org.nnf.pns.util.Concurrency.tryAcquire;

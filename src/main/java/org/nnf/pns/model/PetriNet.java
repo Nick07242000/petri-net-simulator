@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.function.BiPredicate;
 
 import static java.lang.System.currentTimeMillis;
-import static java.util.Arrays.*;
+import static java.util.Arrays.deepEquals;
+import static java.util.Arrays.fill;
 import static java.util.stream.IntStream.of;
 import static org.nnf.pns.util.Constants.*;
 import static org.nnf.pns.util.Net.createSequence;
