@@ -8,6 +8,7 @@ import org.nnf.pns.service.Monitor;
 
 import java.util.Scanner;
 
+import static java.lang.System.currentTimeMillis;
 import static org.nnf.pns.util.Concurrency.createGenerator;
 import static org.nnf.pns.util.Concurrency.createWorker;
 
@@ -18,7 +19,7 @@ public class Main {
         Monitor monitor = Monitor.getInstance(getPolicy());
 
         log.debug("Application starting...");
-
+        log.debug("Start time: "+currentTimeMillis());
         createWorker("PURPLE", monitor, 1, 3);
         createWorker("PINK", monitor, 2, 4);
         createWorker("YELLOW", monitor, 5, 7);

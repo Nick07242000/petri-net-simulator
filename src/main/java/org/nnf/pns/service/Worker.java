@@ -20,7 +20,7 @@ public class Worker implements Runnable {
             for (int j = 0; j < TRANSITIONS_COUNT; j++) {
                 if (transition[j] == 1) {
                     log.debug("Thread " + currentThread().getName() + " firing transition " + j);
-                    monitor.fireTransition(j);
+                    monitor.fireTransition(j, false);
                 }
             }
         }

@@ -16,7 +16,7 @@ public class Generator implements Runnable{
         int count = 0;
         for (int i = 0; i < MAX_GENERATED; i++) {
             log.debug("Generating mark...");
-            monitor.fireTransition(0);
+            monitor.fireTransition(0, false);
             count++;
         }
         log.debug(count);
