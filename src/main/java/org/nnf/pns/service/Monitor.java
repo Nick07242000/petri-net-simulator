@@ -87,10 +87,8 @@ public class Monitor {
         //After executing transitions, check for newly sensitized ones
         wakeUpNextTransition();
 
-        //if (!isTaken) {
-            mutex.release();
-            log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
-        //}
+        mutex.release();
+        log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
     }
 
     private void moveToWaiting(int transition) {
@@ -105,8 +103,8 @@ public class Monitor {
         //Sleep thread
         tryAcquire(queues[transition]);
 
-        tryAcquire(mutex);
         //Resume on wake up
+        tryAcquire(mutex);
         fireTransition(transition, true);
     }
 
