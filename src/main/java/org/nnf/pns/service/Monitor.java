@@ -28,9 +28,8 @@ public class Monitor {
     private final Policy policy;
     private final Semaphore mutex;
     private final Semaphore[] queues;
-    private final int[] waiting;
+    private final boolean[] waiting;
     private final int[] timesFired;
-    //TODO: boolean array to check for already waiting threads
     private final List<String> firedTransitions;
 
     private Monitor(Policy policy) {
@@ -44,8 +43,8 @@ public class Monitor {
                 .mapToObj(i -> new Semaphore(0))
                 .toArray(Semaphore[]::new);
 
-        this.waiting = new int[TRANSITIONS_COUNT];
-        fill(this.waiting, 0);
+        this.waiting = new boolean[TRANSITIONS_COUNT];
+        fill(this.waiting, false);
 
         this.timesFired = new int[TRANSITIONS_COUNT];
 
@@ -95,7 +94,7 @@ public class Monitor {
         log.debug("Thread moved to waiting list for transition: " + transition);
 
         //Increase waiting count
-        waiting[transition]++;
+        waiting[transition] = true;
 
         //Release the monitor
         mutex.release();
@@ -113,10 +112,10 @@ public class Monitor {
         int next = policy.choose(petriNet.getSensitizedTransitionNumbers());
 
         //Check if the next transition already has a waiting thread
-        if (this.waiting[next] == 0)
+        if (!this.waiting[next])
             return;
 
-        this.waiting[next]--;
+        this.waiting[next] = false;
         log.debug("Waking up thread for transition: " + next);
         queues[next].release();
     }
