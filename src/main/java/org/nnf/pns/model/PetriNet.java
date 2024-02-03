@@ -83,6 +83,8 @@ public class PetriNet {
                 timeStamps[i] = currentTimeMillis();
             else if (previouslySensitized[i] == 1 && currentlySensitized[i] == 0)
                 timeStamps[i] = 0;
+            else if (previouslySensitized[i] == 1 && currentlySensitized[i] == 1)
+                timeStamps[i] = 0;
         }
     }
 
