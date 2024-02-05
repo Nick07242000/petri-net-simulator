@@ -86,7 +86,7 @@ public class Monitor {
         checkProgramEnd();
 
         //After executing transitions, check for newly sensitized ones
-        wakeUpNextTransition();
+        if (wakeUpNextTransition()) return;
 
         mutex.release();
         log.debug("Mutex freed, remaining permits: " + mutex.availablePermits());
@@ -105,18 +105,18 @@ public class Monitor {
         tryAcquire(queues[transition]);
 
         //Resume on wake up
-        tryAcquire(mutex);
+        //tryAcquire(mutex);
         fireTransition(transition, true);
     }
 
-    private void wakeUpNextTransition() {
+    private boolean wakeUpNextTransition() {
         List<Integer> waitingTransitions = petriNet.getSensitizedTransitionNumbers()
                 .stream()
                 .filter(t -> this.waiting[t])
                 .collect(toList());
 
         //If no transitions are waiting there's nothing to wake up
-        if (waitingTransitions.isEmpty()) return;
+        if (waitingTransitions.isEmpty()) return false;
 
         //Ask the policy for the next transition to be fired
         int next = policy.choose(waitingTransitions);
@@ -124,6 +124,7 @@ public class Monitor {
         this.waiting[next] = false;
         log.debug("Waking up thread for transition: " + next);
         queues[next].release();
+        return true;
     }
 
     private void checkProgramEnd() {
