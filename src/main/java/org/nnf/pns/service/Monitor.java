@@ -8,11 +8,13 @@ import org.nnf.pns.model.policy.Policy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Collectors;
 
 import static java.lang.String.join;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.exit;
 import static java.util.Arrays.fill;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static org.nnf.pns.util.Concurrency.delay;
 import static org.nnf.pns.util.Concurrency.tryAcquire;
@@ -108,12 +110,16 @@ public class Monitor {
     }
 
     private void wakeUpNextTransition() {
-        //Ask the policy for the next transition to be fired
-        int next = policy.choose(petriNet.getSensitizedTransitionNumbers());
+        List<Integer> waitingTransitions = petriNet.getSensitizedTransitionNumbers()
+                .stream()
+                .filter(t -> this.waiting[t])
+                .collect(toList());
 
-        //Check if the next transition already has a waiting thread
-        if (!this.waiting[next])
-            return;
+        //If no transitions are waiting there's nothing to wake up
+        if (waitingTransitions.isEmpty()) return;
+
+        //Ask the policy for the next transition to be fired
+        int next = policy.choose(waitingTransitions);
 
         this.waiting[next] = false;
         log.debug("Waking up thread for transition: " + next);
