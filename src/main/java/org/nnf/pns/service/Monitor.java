@@ -119,7 +119,7 @@ public class Monitor {
         if (waitingTransitions.isEmpty()) return false;
 
         //Ask the policy for the next transition to be fired
-        int next = policy.choose(waitingTransitions);
+        int next = policy.choose(waitingTransitions, firedTransitions);
 
         this.waiting[next] = false;
         log.debug("Waking up thread for transition: " + next);
