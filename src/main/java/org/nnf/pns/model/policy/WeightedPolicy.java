@@ -3,6 +3,8 @@ package org.nnf.pns.model.policy;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.function.IntBinaryOperator;
 import java.util.function.Predicate;
 
 import static java.util.Arrays.asList;
@@ -19,39 +21,40 @@ public class WeightedPolicy extends Policy {
     }
 
     @Override
-    public int choose(List<Integer> transitions, List<String> firedTransitions) {
+    public int choose(List<Integer> transitions) {
         if (transitions.size() == 1)
             return transitions.get(0);
 
-        long leftFired = getFiredTransitions(firedTransitions, asList(1,3,5,7));
-        long rightFired = getFiredTransitions(firedTransitions, asList(2,4,6,8));
-        long leftFiredThirdSegment = getFiredTransitions(firedTransitions, asList(9,11));
-        long rightFiredThirdSegment = getFiredTransitions(firedTransitions, asList(10,12));
+        if (transitions.contains(1) && transitions.contains(2))
+            return which(1,2);
 
-        boolean determinant = transitions.contains(9) || transitions.contains(10) ?
-                leftFiredThirdSegment >= 4 * rightFiredThirdSegment :
-                leftFired >= rightFired;
+        if (transitions.contains(5) && transitions.contains(6))
+            return which(5,6);
 
-        return determinant ?
-                filterTransitions(transitions, t -> t % 2 == 0) :
-                filterTransitions(transitions, t -> t % 2 != 0);
+        if (transitions.contains(9) && transitions.contains(10))
+            return whichWeighted();
+
+        return transitions.get(transitions.size() - 1);
     }
 
-    private int filterTransitions(List<Integer> transitions, Predicate<Integer> filter) {
-        if (transitions.stream()
-                .filter(filter)
-                .anyMatch(t -> t == 9)) return 9;
+    @Override
+    public boolean canExecute(int transition) {
+        switch(transition) {
+            case 1:
+            case 2:
+                return which(1,2) == transition;
+            case 5:
+            case 6:
+                return which(5,6) == transition;
+            case 9:
+            case 10:
+                return whichWeighted() == transition;
+            default:
+                return true;
+        }
+    }
 
-        if (transitions.stream()
-                .filter(filter)
-                .anyMatch(t -> t == 10)) return 10;
-
-        List<Integer> filteredTransitions = transitions.stream()
-                .filter(filter)
-                .collect(collectingAndThen(
-                        toList(),
-                        collected -> collected.isEmpty() ? transitions : collected));
-
-        return filteredTransitions.get(random.nextInt(filteredTransitions.size()));
+    protected int whichWeighted() {
+        return fires[9] >= 4 * fires[10] ? 10 : 9;
     }
 }

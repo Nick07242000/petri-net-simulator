@@ -3,6 +3,8 @@ package org.nnf.pns.model.policy;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.function.IntBinaryOperator;
 import java.util.function.Predicate;
 
 import static java.util.Arrays.asList;
@@ -18,26 +20,36 @@ public class BalancedPolicy extends Policy {
     }
 
     @Override
-    public int choose(List<Integer> transitions, List<String> firedTransitions) {
+    public int choose(List<Integer> transitions) {
         if (transitions.size() == 1)
             return transitions.get(0);
 
-        long leftFired = getFiredTransitions(firedTransitions, asList(1,3,5,7,9,11));
-        long rightFired = getFiredTransitions(firedTransitions, asList(2,4,6,8,10,12));
+        if (transitions.contains(1) && transitions.contains(2))
+            return which(1,2);
 
-        //Balance branches
-        return leftFired >= rightFired ?
-                filterTransitions(transitions, t -> t % 2 == 0) :
-                filterTransitions(transitions, t -> t % 2 != 0);
+        if (transitions.contains(5) && transitions.contains(6))
+            return which(5,6);
+
+        if (transitions.contains(9) && transitions.contains(10))
+            return which(9,10);
+
+        return transitions.get(transitions.size() - 1);
     }
 
-    private int filterTransitions(List<Integer> transitions, Predicate<Integer> filter) {
-        List<Integer> filteredTransitions = transitions.stream()
-                .filter(filter)
-                .collect(collectingAndThen(
-                        toList(),
-                        collected -> collected.isEmpty() ? transitions : collected));
-
-        return filteredTransitions.get(random.nextInt(filteredTransitions.size()));
+    @Override
+    public boolean canExecute(int transition) {
+        switch(transition) {
+            case 1:
+            case 2:
+                return which(1,2) == transition;
+            case 5:
+            case 6:
+                return which(5,6) == transition;
+            case 9:
+            case 10:
+                return which(9,10) == transition;
+            default:
+                return true;
+        }
     }
 }

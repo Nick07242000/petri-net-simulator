@@ -63,7 +63,7 @@ public class Monitor {
         if (!isTaken) tryAcquire(mutex);
 
         //Check if transition can be fired
-        if (!petriNet.isSensitized(transition)) {
+        if (!petriNet.isSensitized(transition) || !policy.canExecute(transition)) {
             moveToWaiting(transition);
             return;
         }
@@ -78,6 +78,7 @@ public class Monitor {
 
         //Fire the transition, evolve current marking
         petriNet.fire(transition);
+        policy.increaseCounter(transition);
         timesFired[transition]++;
         firedTransitions.add("T" + transition);
         log.debug("Transition " + transition + " fired successfully");
@@ -105,7 +106,6 @@ public class Monitor {
         tryAcquire(queues[transition]);
 
         //Resume on wake up
-        //tryAcquire(mutex);
         fireTransition(transition, true);
     }
 
@@ -119,7 +119,7 @@ public class Monitor {
         if (waitingTransitions.isEmpty()) return false;
 
         //Ask the policy for the next transition to be fired
-        int next = policy.choose(waitingTransitions, firedTransitions);
+        int next = policy.choose(waitingTransitions);
 
         this.waiting[next] = false;
         log.debug("Waking up thread for transition: " + next);
